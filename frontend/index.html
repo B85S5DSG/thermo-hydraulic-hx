@@ -36,7 +36,6 @@
       line-height: 1.4;
     }
 
-    /* TOP NAVIGATION BAR */
     .topbar {
       background: var(--surface);
       border-bottom: 1px solid var(--border);
@@ -135,7 +134,6 @@
       font-weight: 600;
     }
 
-    /* MAIN WORKSPACE GRID */
     .layout {
       max-width: 1680px;
       margin: 0 auto;
@@ -219,7 +217,6 @@
       color: #581c87;
     }
 
-    /* KPI CARDS */
     .kpi-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -255,7 +252,6 @@
       color: var(--text-muted);
     }
 
-    /* DIAGNOSTIC TABLES */
     .diag-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -280,7 +276,6 @@
       font-variant-numeric: tabular-nums;
     }
 
-    /* SCHEMATIC + SWEEP ROW */
     .schematic-sweep-row {
       display: grid;
       grid-template-columns: 360px 1fr;
@@ -382,7 +377,6 @@
       margin-top: 2px;
     }
 
-    /* CHARTS */
     .charts-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -434,7 +428,6 @@
 </header>
 
 <div class="layout">
-  <!-- LEFT INPUT SIDEBAR -->
   <aside class="panel">
     <div class="sec-title">0. Heat Exchanger Architecture</div>
     <div>
@@ -512,12 +505,19 @@
         <label for="inEta">Base Pump Efficiency, &eta;_base (%):</label>
         <input type="number" id="inEta" value="72" step="1" min="10" max="100" onchange="runCalc()">
       </div>
+      <div style="grid-column: 1 / -1;">
+        <label for="inPumpType">Pump Architecture Override:</label>
+        <select id="inPumpType" onchange="runCalc()">
+          <option value="auto" selected>Auto (based on fluid viscosity)</option>
+          <option value="centrifugal">Centrifugal (Radial Impeller)</option>
+          <option value="positive_displacement">Positive Displacement (Rotary Gear)</option>
+        </select>
+      </div>
     </div>
     <div id="pumpBadge" class="pump-badge">
       <b>Active Pump:</b> Initializing...
     </div>
 
-    <!-- SECTION 3A: FINNED PIPE AIR SIDE -->
     <div id="airSideSection">
       <div class="sec-title">3. External Cross-Flow Air &amp; Radial Fins</div>
       <div class="grid-2">
@@ -562,7 +562,6 @@
       </div>
     </div>
 
-    <!-- SECTION 3B: CONCENTRIC OUTER SHELL -->
     <div id="shellSideSection" style="display:none;">
       <div class="sec-title">3. Outer Shell Fluid &amp; Pump</div>
       <div>
@@ -593,6 +592,14 @@
           <label for="inShellEta">Shell Pump Eff (%):</label>
           <input type="number" id="inShellEta" value="72" step="1" min="10" max="100" onchange="runCalc()">
         </div>
+        <div style="grid-column: 1 / -1;">
+          <label for="inShellPumpType">Shell Pump Architecture Override:</label>
+          <select id="inShellPumpType" onchange="runCalc()">
+            <option value="auto" selected>Auto (based on fluid viscosity)</option>
+            <option value="centrifugal">Centrifugal (Radial Impeller)</option>
+            <option value="positive_displacement">Positive Displacement (Rotary Gear)</option>
+          </select>
+        </div>
       </div>
       <div id="shellPumpBadge" class="pump-badge" style="display:none;">
         <b>Active Shell Pump:</b> Initializing...
@@ -600,7 +607,6 @@
     </div>
   </aside>
 
-  <!-- RIGHT RESULTS & PLOTS WORKSPACE -->
   <main class="panel">
     <div class="kpi-grid">
       <div class="kpi-card top-accent-slate">
@@ -626,7 +632,6 @@
     </div>
 
     <div class="diag-grid">
-      <!-- Internal Hydraulics -->
       <div class="kpi-card">
         <div class="sec-title">Inner Tube Hydraulics</div>
         <table class="diag">
@@ -640,7 +645,6 @@
         </table>
       </div>
 
-      <!-- External Air or Outer Shell -->
       <div class="kpi-card">
         <div class="sec-title" id="secTitleSecondary">External Air &amp; Shroud</div>
         <table class="diag">
@@ -654,7 +658,6 @@
         </table>
       </div>
 
-      <!-- Conjugate Thermal Resistance -->
       <div class="kpi-card">
         <div class="sec-title">Thermal Network</div>
         <table class="diag">
@@ -669,7 +672,6 @@
       </div>
     </div>
 
-    <!-- TO-SCALE CROSS-SECTION + PARAMETRIC SWEEP BAR -->
     <div class="schematic-sweep-row">
       <div class="schematic-box">
         <div class="schematic-header">
@@ -745,6 +747,6 @@
   </main>
 </div>
 
-<script src="app.js?v=14"></script>
+<script src="app.js?v=15"></script>
 </body>
 </html>
