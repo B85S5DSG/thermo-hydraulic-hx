@@ -1,3 +1,6 @@
+<img width="1384" height="994" alt="image" src="https://github.com/user-attachments/assets/f464f40d-3a3b-4517-8304-6862275840ea" />
+
+
 # Thermo-Hydraulic Heat Exchanger Calculator
 
 This is my first attempt at making a container. As a mechanical engineer, I figured I'd try something that I know how to calculate. This is a relatively simple heat exchanger calculator—very basic, and not what you'd find in an industrial application due to its academic design.
