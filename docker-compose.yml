@@ -1,0 +1,14 @@
+services:
+  thermo-hydraulic-hx:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: thermo-hydraulic-hx:latest
+    container_name: thermo-hydraulic-hx
+    ports:
+      - "8000:8000"
+    environment:
+      - DATA_DIR=/app/data
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped

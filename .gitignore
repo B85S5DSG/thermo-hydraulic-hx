@@ -1,0 +1,16 @@
+# Runtime calculation snapshots & data
+data/
+*.csv
+
+# Python cache & virtual environments
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# OS & editor files
+.DS_Store
+Thumbs.db
+*.swp
+*~

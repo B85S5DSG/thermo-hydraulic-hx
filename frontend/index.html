@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Finned-Tube Cross-Flow Heat Exchanger Calculator</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      margin: 0;
+      padding: 16px;
+      background: #f4f6f9;
+      color: #1e293b;
+      font-size: 13px;
+    }
+    h1 {
+      font-size: 19px;
+      margin: 0 0 12px 0;
+      color: #0f172a;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 12.5px;
+      font-weight: normal;
+    }
+    .unit-toggle {
+      display: inline-flex;
+      border: 1px solid #cbd5e1;
+      border-radius: 5px;
+      overflow: hidden;
+      background: #fff;
+    }
+    .unit-toggle button {
+      border: none;
+      padding: 5px 11px;
+      font-size: 12px;
+      font-weight: bold;
+      cursor: pointer;
+      background: #fff;
+      color: #475569;
+    }
+    .unit-toggle button.active {
+      background: #0066cc;
+      color: #fff;
+    }
+    .layout {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+    .panel {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 12px 14px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    }
+    .sec-title {
+      font-weight: bold;
+      font-size: 12.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      color: #0055aa;
+      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 4px;
+      margin: 12px 0 8px 0;
+    }
+    .sec-title:first-child { margin-top: 0; }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    label {
+      display: block;
+      font-size: 11.5px;
+      color: #475569;
+      margin-bottom: 2px;
+    }
+    input[type="number"], select {
+      width: 100%;
+      padding: 5px 7px;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      font-size: 12.5px;
+      background: #fff;
+    }
+    input[type="number"]:focus, select:focus {
+      outline: none;
+      border-color: #0066cc;
+    }
+    .row-inline {
+      display: flex;
+      gap: 6px;
+    }
+    .pump-badge {
+      margin-top: 8px;
+      padding: 8px 10px;
+      border-radius: 5px;
+      background: #eff6ff;
+      border-left: 4px solid #2563eb;
+      font-size: 12px;
+      line-height: 1.35;
+    }
+    .pump-badge.pd {
+      background: #faf5ff;
+      border-left-color: #9333ea;
+    }
+    .btn-save {
+      width: 100%;
+      margin-top: 12px;
+      padding: 8px;
+      background: #0f766e;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .btn-save:hover { background: #115e59; }
+    #saveMsg {
+      display: none;
+      margin-top: 6px;
+      padding: 6px 8px;
+      background: #dcfce7;
+      color: #166534;
+      border-radius: 4px;
+      font-size: 11.5px;
+      text-align: center;
+    }
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .kpi-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 5px;
+      padding: 8px 10px;
+    }
+    .kpi-label { font-size: 11px; color: #64748b; }
+    .kpi-val { font-size: 16px; font-weight: bold; color: #0f172a; margin-top: 2px; }
+    .diag-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    table.diag {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    table.diag td {
+      padding: 3px 4px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    table.diag td:last-child {
+      text-align: right;
+      font-weight: bold;
+      color: #1e293b;
+    }
+    .sweep-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      background: #f8fafc;
+      padding: 7px 10px;
+      border: 1px solid #e2e8f0;
+      border-radius: 5px;
+    }
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .chart-box {
+      border: 1px solid #e2e8f0;
+      border-radius: 5px;
+      padding: 8px;
+      background: #fff;
+    }
+    .chart-title {
+      font-weight: bold;
+      font-size: 12px;
+      color: #334155;
+      margin-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+    }
+    canvas {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    @media (max-width: 1100px) {
+      .layout { grid-template-columns: 1fr; }
+      .kpi-grid, .diag-grid, .charts-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<h1>
+  <span>Finned-Tube Cross-Flow Heat Exchanger Calculator</span>
+  <div class="header-controls">
+    <span style="color:#64748b;">Units:</span>
+    <div class="unit-toggle">
+      <button type="button" id="btnMetric" class="active" onclick="setUnitSystem('metric')">Metric (SI)</button>
+      <button type="button" id="btnImperial" onclick="setUnitSystem('imperial')">Imperial (US)</button>
+    </div>
+  </div>
+</h1>
+
+<div class="layout">
+  <!-- LEFT INPUT PANEL -->
+  <div class="panel">
+    <div class="sec-title">1. Pipe Geometry &amp; Solid Material</div>
+    <div>
+      <label for="inMat">Pipe Solid Material:</label>
+      <select id="inMat"></select>
+    </div>
+    <div class="grid-2" style="margin-top:8px;">
+      <div>
+        <label for="inDi" id="lblDi">Inner Dia, D_i (mm):</label>
+        <input type="number" id="inDi" value="25.0" step="0.5" min="0.1" onchange="validateFinDia(); runCalc();">
+      </div>
+      <div>
+        <label for="inWall" id="lblWall">Wall Thick, t (mm):</label>
+        <input type="number" id="inWall" value="2.0" step="0.1" min="0.05" onchange="validateFinDia(); runCalc();">
+      </div>
+      <div>
+        <label for="inL" id="lblL">Active Length, L (m):</label>
+        <input type="number" id="inL" value="2.0" step="0.1" min="0.05" onchange="runCalc()">
+      </div>
+      <div>
+        <label for="inEps" id="lblEps">Roughness, &epsilon; (mm):</label>
+        <input type="number" id="inEps" value="0.0015" step="0.0005" min="0" onchange="runCalc()">
+      </div>
+    </div>
+
+    <div class="sec-title">2. Internal Fluid &amp; Pump</div>
+    <div>
+      <label for="inFluid">Working Fluid (CoolProp):</label>
+      <select id="inFluid" onchange="onFluidChange()"></select>
+    </div>
+    <div class="grid-2" style="margin-top:8px;">
+      <div>
+        <label for="inFlow">Volumetric Flow:</label>
+        <div class="row-inline">
+          <input type="number" id="inFlow" value="10.0" step="0.5" min="0.01" onchange="runCalc()">
+          <select id="inFlowUnit" style="width:85px;" onchange="runCalc()">
+            <option value="lpm" selected>L/min</option>
+            <option value="gpm">GPM</option>
+            <option value="cfm">CFM</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label for="inTin" id="lblTin">Inlet Temp, T_in (&deg;C):</label>
+        <input type="number" id="inTin" value="80.0" step="1.0" onchange="runCalc()">
+      </div>
+      <div style="grid-column: 1 / -1;">
+        <label for="inEta">Base Pump Efficiency, &eta;_base (%):</label>
+        <input type="number" id="inEta" value="72" step="1" min="10" max="100" onchange="runCalc()">
+      </div>
+    </div>
+    <div id="pumpBadge" class="pump-badge">
+      <b>Active Pump:</b> Initializing...
+    </div>
+
+    <div class="sec-title">3. External Cross-Flow Air &amp; Radial Fins</div>
+    <div class="grid-2">
+      <div>
+        <label for="inV" id="lblV">Duct Air Velocity (m/s):</label>
+        <input type="number" id="inV" value="8.0" step="0.5" min="0" onchange="runCalc()">
+      </div>
+      <div>
+        <label for="inTinf" id="lblTinf">Ambient Air, T_&infin; (&deg;C):</label>
+        <input type="number" id="inTinf" value="20.0" step="1.0" onchange="runCalc()">
+      </div>
+      <div style="grid-column: 1 / -1;">
+        <label for="inEtaFan">Blower / Fan Efficiency, &eta;_fan (%):</label>
+        <input type="number" id="inEtaFan" value="65" step="1" min="10" max="100" onchange="runCalc()">
+      </div>
+
+      <div style="grid-column: 1 / -1; margin-top: 4px; padding-top: 6px; border-top: 1px dashed #cbd5e1;">
+        <label style="display:flex; align-items:center; gap:6px; font-weight:bold; color:#0f172a; cursor:pointer;">
+          <input type="checkbox" id="inUseFins" checked onchange="toggleFinInputs()">
+          Enable Shrouded Radial Annular Fins
+        </label>
+      </div>
+
+      <div id="finControls" style="grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+        <div>
+          <label for="inFinDia" id="lblFinDia">Fin Outer Dia, D_fin (mm):</label>
+          <input type="number" id="inFinDia" value="55.0" step="1.0" min="0.1" onchange="validateFinDia(); runCalc();">
+        </div>
+        <div>
+          <label for="inFinThick" id="lblFinThick">Fin Thickness, t_fin (mm):</label>
+          <input type="number" id="inFinThick" value="0.5" step="0.1" min="0.002" onchange="runCalc()">
+        </div>
+        <div>
+          <label for="inFinPitch" id="lblFinPitch">On-Center Spacing (mm):</label>
+          <input type="number" id="inFinPitch" value="3.0" step="0.5" min="0.01" onchange="runCalc()">
+        </div>
+        <div>
+          <label for="inDuctMargin">Duct Clearance (10-20%):</label>
+          <input type="number" id="inDuctMargin" value="15" step="1" min="10" max="20" onchange="runCalc()">
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-save" onclick="fetchFromBackend(true)">Log Snapshot to CSV</button>
+    <div id="saveMsg">Snapshot saved to calculation_history.csv</div>
+  </div>
+
+  <!-- RIGHT RESULTS & PLOTS PANEL -->
+  <div class="panel">
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">Fluid Outlet Temp (T_out)</div>
+        <div class="kpi-val" id="outTout">-</div>
+        <div style="font-size:11px; color:#64748b;">&Delta;T: <span id="outDT">-</span></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Gross Heat Rejection (Q)</div>
+        <div class="kpi-val" id="outQ" style="color:#0066cc;">-</div>
+        <div style="font-size:11px; color:#64748b;">UA: <span id="outUA">-</span></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Net Heat Rejection (Q_net)</div>
+        <div class="kpi-val" id="outQnet" style="color:#16a34a;">-</div>
+        <div style="font-size:11px; color:#64748b;">Net Eff: <span id="outEff">-</span></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Heat / Parasitic Power (Q / P_elec)</div>
+        <div class="kpi-val" id="outCOPsys" style="color:#9333ea;">-</div>
+        <div style="font-size:11px; color:#64748b;">Pump+Fan: <span id="outPtotSummary">-</span></div>
+      </div>
+    </div>
+
+    <div class="diag-grid">
+      <!-- Internal Hydraulics -->
+      <div class="kpi-card">
+        <div class="sec-title">Internal Hydraulics</div>
+        <table class="diag">
+          <tr><td>Pump Architecture:</td><td id="outPumpType">-</td></tr>
+          <tr><td>Kinematic Visc (&nu;):</td><td id="outVisc">-</td></tr>
+          <tr><td>Actual Pump Eff:</td><td id="outEtaAct">-</td></tr>
+          <tr><td>Internal &Delta;P:</td><td id="outDP">-</td></tr>
+          <tr><td>Darcy Friction (f):</td><td id="outF">-</td></tr>
+          <tr><td>Hydraulic Power:</td><td id="outPhyd">-</td></tr>
+          <tr><td>Pump Shaft/Elec:</td><td id="outPpump">-</td></tr>
+        </table>
+      </div>
+
+      <!-- External Air & Shroud -->
+      <div class="kpi-card">
+        <div class="sec-title">External Air &amp; Shroud</div>
+        <table class="diag">
+          <tr><td>Fins &amp; Duct Shroud:</td><td id="outFinSummary">-</td></tr>
+          <tr><td>Air Pressure Drop:</td><td id="outDPair">-</td></tr>
+          <tr><td>Bundle Loss Coeff:</td><td id="outCD">-</td></tr>
+          <tr><td>Fan Elec Power:</td><td id="outPfan">-</td></tr>
+          <tr><td>Air Reynolds (Re_o):</td><td id="outReO">-</td></tr>
+          <tr><td>Air Nusselt (Nu_o):</td><td id="outNuO">-</td></tr>
+          <tr><td>Air Convection (h_o):</td><td id="outHo">-</td></tr>
+        </table>
+      </div>
+
+      <!-- Conjugate Thermal Resistance -->
+      <div class="kpi-card">
+        <div class="sec-title">Thermal Network</div>
+        <table class="diag">
+          <tr><td>Pipe Outer Dia (D_o):</td><td id="outDo">-</td></tr>
+          <tr><td>Internal Re_Di:</td><td id="outReI">-</td></tr>
+          <tr><td>Flow Regime:</td><td id="outRegI">-</td></tr>
+          <tr><td>Internal Nu_Di / h_i:</td><td><span id="outNuI">-</span> / <span id="outHi">-</span></td></tr>
+          <tr><td id="lblRi">Inner Film R_i:</td><td id="outRi">-</td></tr>
+          <tr><td id="lblRw">Pipe Wall R_w:</td><td id="outRw">-</td></tr>
+          <tr><td id="lblRo">Finned Air R_o:</td><td id="outRo">-</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="sweep-bar">
+      <label for="xMode" style="margin:0; font-weight:bold; color:#0f172a;">Parametric Sweep X-Axis:</label>
+      <select id="xMode" style="width:270px;" onchange="runCalc()">
+        <option value="Re_i" selected>Internal Reynolds Number (Re_Di)</option>
+        <option value="Flow">Internal Volumetric Flow Rate</option>
+        <option value="Wall" id="optSweepWall">Pipe Wall Thickness t (mm)</option>
+        <option value="V_air" id="optSweepVair">External Air Approach Velocity (m/s)</option>
+        <option value="Re_o">External Air Reynolds Number (Re_Do)</option>
+      </select>
+    </div>
+
+    <div class="charts-grid">
+      <div class="chart-box">
+        <div class="chart-title">
+          <span id="titleG1">Gross Q (Blue) vs. Net Q (Green Dashed)</span>
+        </div>
+        <canvas id="cG1" width="520" height="230"></canvas>
+      </div>
+      <div class="chart-box">
+        <div class="chart-title">
+          <span id="titleG4">Net Efficiency % (Green) &amp; Pump/Total Power</span>
+        </div>
+        <canvas id="cG4" width="520" height="230"></canvas>
+      </div>
+      <div class="chart-box">
+        <div class="chart-title">
+          <span id="titleG2">Fluid Outlet Temperature T_out</span>
+        </div>
+        <canvas id="cG2" width="520" height="230"></canvas>
+      </div>
+      <div class="chart-box">
+        <div class="chart-title">
+          <span id="titleG3">Internal Pipe Nusselt Number (Nu_Di)</span>
+        </div>
+        <canvas id="cG3" width="520" height="230"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="app.js?v=8"></script>
+</body>
+</html>
