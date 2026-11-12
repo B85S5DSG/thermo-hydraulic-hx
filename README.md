@@ -9,3 +9,18 @@ Input parameters:
   You can change quite a few things including the liquid going into the Hx, it's volumetric flow rate and temperature.  The air side is also something you can control in a similar fashion.  Here I have it set as velocity.  Depending on the viscosity of the liquid, an impellor or positive displacement pump will be automatically selected with a typical efficiency that you can tweak.  You can also change the geometry of the pipe ID, wall thickness, length, fin OD, fin wall, fin OD, and specify how much larger in % the duct is than the OD of the fins.  Metric & imperial units are selectable too.
 
   This is mostly for educational purposes for me of how to create some code and deploy it.  Yes, I used Gemini Argon to fully create the Python and JS code.  I am not a coder.  But I questioned the physics and results.  However as a quick and dirty exercise for getting something off the ground, there are probably some errors and this should definitely not be used for production.
+
+Installation YAML
+
+services:
+  thermo-hydraulic-hx:
+    image: ghcr.io/b85s5dsg/thermo-hydraulic-hx:latest
+    container_name: thermo-hydraulic-hx
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - /<your path here>/thermo-hydraulic-hx/data:/app/data
+
+
+The volume is used for writing out results in a .csv file
