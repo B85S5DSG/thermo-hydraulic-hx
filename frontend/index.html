@@ -3,166 +3,259 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Finned-Tube Cross-Flow Heat Exchanger Calculator</title>
+  <title>Thermo-Hydraulic Heat Exchanger Calculator</title>
   <style>
-    * { box-sizing: border-box; }
-    body {
-      font-family: Arial, Helvetica, sans-serif;
-      margin: 0;
-      padding: 16px;
-      background: #f4f6f9;
-      color: #1e293b;
-      font-size: 13px;
+    :root {
+      --bg: #f1f5f9;
+      --surface: #ffffff;
+      --surface-alt: #f8fafc;
+      --border: #e2e8f0;
+      --border-strong: #cbd5e1;
+      --text: #0f172a;
+      --text-muted: #475569;
+      --text-subtle: #64748b;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --teal: #0d9488;
+      --teal-hover: #0f766e;
+      --green: #16a34a;
+      --purple: #7c3aed;
+      --radius: 8px;
+      --shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
     }
-    h1 {
-      font-size: 19px;
-      margin: 0 0 12px 0;
-      color: #0f172a;
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    /* TOP NAVIGATION BAR */
+    .topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 20px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
       gap: 10px;
+    }
+    .brand-badge {
+      background: #eff6ff;
+      color: var(--primary);
+      border: 1px solid #bfdbfe;
+      font-weight: 700;
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 5px;
+      letter-spacing: 0.4px;
+    }
+    .brand h1 {
+      font-size: 16px;
+      font-weight: 700;
+      margin: 0;
+      color: var(--text);
+      letter-spacing: -0.2px;
     }
     .header-controls {
       display: flex;
       align-items: center;
-      gap: 12px;
-      font-size: 12.5px;
-      font-weight: normal;
+      gap: 10px;
+      flex-wrap: wrap;
     }
     .unit-toggle {
       display: inline-flex;
-      border: 1px solid #cbd5e1;
-      border-radius: 5px;
+      border: 1px solid var(--border-strong);
+      border-radius: 6px;
       overflow: hidden;
-      background: #fff;
+      background: var(--surface-alt);
+      padding: 2px;
     }
     .unit-toggle button {
       border: none;
-      padding: 5px 11px;
-      font-size: 12px;
-      font-weight: bold;
+      padding: 4px 10px;
+      font-size: 11.5px;
+      font-weight: 600;
       cursor: pointer;
-      background: #fff;
-      color: #475569;
+      background: transparent;
+      color: var(--text-muted);
+      border-radius: 4px;
+      transition: all 0.15s ease;
     }
     .unit-toggle button.active {
-      background: #0066cc;
+      background: var(--primary);
+      color: #fff;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+    .btn-header {
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: background 0.15s ease;
+    }
+    .btn-save {
+      background: var(--teal);
       color: #fff;
     }
+    .btn-save:hover { background: var(--teal-hover); }
+    .btn-download {
+      background: var(--surface);
+      color: var(--text);
+      border-color: var(--border-strong);
+    }
+    .btn-download:hover { background: var(--surface-alt); }
+
+    #saveMsg {
+      display: none;
+      padding: 4px 10px;
+      background: #dcfce7;
+      color: #166534;
+      border: 1px solid #86efac;
+      border-radius: 6px;
+      font-size: 11.5px;
+      font-weight: 600;
+    }
+
+    /* MAIN WORKSPACE GRID */
     .layout {
+      max-width: 1680px;
+      margin: 0 auto;
+      padding: 16px 20px;
       display: grid;
-      grid-template-columns: 360px 1fr;
+      grid-template-columns: 350px 1fr;
       gap: 16px;
       align-items: start;
     }
+
     .panel {
-      background: #ffffff;
-      border: 1px solid #cbd5e1;
-      border-radius: 6px;
-      padding: 12px 14px;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      box-shadow: var(--shadow);
     }
+
     .sec-title {
-      font-weight: bold;
-      font-size: 12.5px;
+      font-weight: 700;
+      font-size: 11px;
       text-transform: uppercase;
-      letter-spacing: 0.4px;
-      color: #0055aa;
-      border-bottom: 1px solid #e2e8f0;
-      padding-bottom: 4px;
-      margin: 12px 0 8px 0;
+      letter-spacing: 0.6px;
+      color: var(--primary);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 5px;
+      margin: 14px 0 9px 0;
     }
     .sec-title:first-child { margin-top: 0; }
+
     .grid-2 {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 8px;
     }
+
     label {
       display: block;
       font-size: 11.5px;
-      color: #475569;
-      margin-bottom: 2px;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-bottom: 3px;
     }
+
     input[type="number"], select {
       width: 100%;
-      padding: 5px 7px;
-      border: 1px solid #cbd5e1;
-      border-radius: 4px;
+      padding: 6px 8px;
+      border: 1px solid var(--border-strong);
+      border-radius: 5px;
       font-size: 12.5px;
-      background: #fff;
+      color: var(--text);
+      background: var(--surface);
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
     }
     input[type="number"]:focus, select:focus {
       outline: none;
-      border-color: #0066cc;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.14);
     }
+
     .row-inline {
       display: flex;
-      gap: 6px;
+      gap: 5px;
     }
+
     .pump-badge {
-      margin-top: 8px;
+      margin-top: 9px;
       padding: 8px 10px;
-      border-radius: 5px;
+      border-radius: 6px;
       background: #eff6ff;
-      border-left: 4px solid #2563eb;
-      font-size: 12px;
+      border: 1px solid #dbeafe;
+      border-left: 3px solid var(--primary);
+      font-size: 11.5px;
+      color: #1e3a8a;
       line-height: 1.35;
     }
     .pump-badge.pd {
       background: #faf5ff;
-      border-left-color: #9333ea;
+      border-color: #f3e8ff;
+      border-left-color: var(--purple);
+      color: #581c87;
     }
-    .btn-save {
-      width: 100%;
-      margin-top: 12px;
-      padding: 8px;
-      background: #0f766e;
-      color: #fff;
-      border: none;
-      border-radius: 4px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .btn-save:hover { background: #115e59; }
-    .btn-download {
-      width: 100%;
-      margin-top: 6px;
-      padding: 8px;
-      background: #0066cc;
-      color: #fff;
-      border: none;
-      border-radius: 4px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .btn-download:hover { background: #0052a3; }
-    #saveMsg {
-      display: none;
-      margin-top: 6px;
-      padding: 6px 8px;
-      background: #dcfce7;
-      color: #166534;
-      border-radius: 4px;
-      font-size: 11.5px;
-      text-align: center;
-    }
+
+    /* KPI CARDS */
     .kpi-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-      margin-bottom: 12px;
+      gap: 12px;
+      margin-bottom: 14px;
     }
     .kpi-card {
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 5px;
-      padding: 8px 10px;
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px 12px;
     }
-    .kpi-label { font-size: 11px; color: #64748b; }
-    .kpi-val { font-size: 16px; font-weight: bold; color: #0f172a; margin-top: 2px; }
+    .kpi-card.top-accent-slate { border-top: 3px solid #475569; }
+    .kpi-card.top-accent-blue  { border-top: 3px solid var(--primary); }
+    .kpi-card.top-accent-green { border-top: 3px solid var(--green); }
+    .kpi-card.top-accent-purple{ border-top: 3px solid var(--purple); }
+
+    .kpi-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      color: var(--text-subtle);
+    }
+    .kpi-val {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      margin: 3px 0 2px 0;
+    }
+    .kpi-sub {
+      font-size: 11.5px;
+      color: var(--text-muted);
+    }
+
+    /* DIAGNOSTIC TABLES */
     .diag-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -175,71 +268,202 @@
       font-size: 12px;
     }
     table.diag td {
-      padding: 3px 4px;
-      border-bottom: 1px solid #f1f5f9;
+      padding: 4px 2px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-muted);
     }
+    table.diag tr:last-child td { border-bottom: none; }
     table.diag td:last-child {
       text-align: right;
-      font-weight: bold;
-      color: #1e293b;
+      font-weight: 600;
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
     }
-    .sweep-bar {
+
+    /* SCHEMATIC + SWEEP ROW */
+    .schematic-sweep-row {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 12px;
+      margin-bottom: 12px;
+      align-items: stretch;
+    }
+    .schematic-box {
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .schematic-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .schematic-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--primary);
+    }
+    .schematic-scale {
+      font-size: 11px;
+      color: var(--text-subtle);
+      font-weight: 600;
+    }
+    #hxSchematicSvg {
+      width: 100%;
+      height: 190px;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      display: block;
+    }
+    .schematic-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 6px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .legend-dot {
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      border-radius: 2px;
+      margin-right: 4px;
+      vertical-align: middle;
+    }
+
+    .sweep-card {
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .sweep-controls {
       display: flex;
       align-items: center;
       gap: 10px;
-      margin-bottom: 10px;
-      background: #f8fafc;
-      padding: 7px 10px;
-      border: 1px solid #e2e8f0;
-      border-radius: 5px;
+      flex-wrap: wrap;
     }
+    .geom-summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+    }
+    .geom-stat {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 7px 9px;
+    }
+    .geom-stat-lbl {
+      font-size: 10.5px;
+      color: var(--text-subtle);
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+    .geom-stat-val {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      margin-top: 2px;
+    }
+
+    /* CHARTS */
     .charts-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 12px;
     }
     .chart-box {
-      border: 1px solid #e2e8f0;
-      border-radius: 5px;
-      padding: 8px;
-      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px 12px;
+      background: var(--surface);
     }
     .chart-title {
-      font-weight: bold;
+      font-weight: 600;
       font-size: 12px;
-      color: #334155;
-      margin-bottom: 4px;
+      color: var(--text);
+      margin-bottom: 6px;
       display: flex;
       justify-content: space-between;
     }
     canvas {
       width: 100%;
+      max-height: 230px;
       height: auto;
       display: block;
     }
-    @media (max-width: 1100px) {
-      .layout { grid-template-columns: 1fr; }
-      .kpi-grid, .diag-grid, .charts-grid { grid-template-columns: 1fr; }
+
+    @media (max-width: 1200px) {
+      .layout, .schematic-sweep-row { grid-template-columns: 1fr; }
+      .kpi-grid, .diag-grid, .charts-grid, .geom-summary-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
 
-<h1>
-  <span>Finned-Tube Cross-Flow Heat Exchanger Calculator</span>
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-badge">HX LAB</span>
+    <h1>Thermo-Hydraulic Heat Exchanger Calculator</h1>
+  </div>
   <div class="header-controls">
-    <span style="color:#64748b;">Units:</span>
+    <span id="saveMsg">Saved to CSV</span>
+    <button type="button" class="btn-header btn-save" onclick="fetchFromBackend(true)">Log Snapshot</button>
+    <button type="button" class="btn-header btn-download" onclick="downloadHistoryCsv()">Download CSV</button>
     <div class="unit-toggle">
       <button type="button" id="btnMetric" class="active" onclick="setUnitSystem('metric')">Metric (SI)</button>
       <button type="button" id="btnImperial" onclick="setUnitSystem('imperial')">Imperial (US)</button>
     </div>
   </div>
-</h1>
+</header>
 
 <div class="layout">
-  <!-- LEFT INPUT PANEL -->
-  <div class="panel">
-    <div class="sec-title">1. Pipe Geometry &amp; Solid Material</div>
+  <!-- LEFT INPUT SIDEBAR -->
+  <aside class="panel">
+    <div class="sec-title">0. Heat Exchanger Architecture</div>
+    <div>
+      <label for="inHxType">Device Configuration:</label>
+      <select id="inHxType" onchange="onHxTypeChange()">
+        <option value="finned_pipe" selected>Shrouded Finned Pipe (Liquid-to-Air)</option>
+        <option value="double_pipe">Concentric Double-Pipe (Single Inner Tube)</option>
+        <option value="multi_tube">Multi-Tube Concentric Bundle (Parallel Tubes)</option>
+      </select>
+    </div>
+    <div id="flowDirBox" style="display:none; margin-top:8px;">
+      <label for="inFlowDir">Stream Flow Orientation:</label>
+      <select id="inFlowDir" onchange="runCalc()">
+        <option value="counter" selected>Counter-Flow (Opposing Streams)</option>
+        <option value="parallel">Parallel-Flow (Co-Current Streams)</option>
+      </select>
+    </div>
+    <div id="nTubesBox" class="grid-2" style="display:none; margin-top:8px;">
+      <div>
+        <label for="inNTubes">Parallel Tubes (N_tubes):</label>
+        <input type="number" id="inNTubes" value="7" step="1" min="2" max="500" onchange="validateShellDia(); runCalc();">
+      </div>
+      <div>
+        <label for="inPitchRatio">Pitch Ratio (P_T / D_o):</label>
+        <input type="number" id="inPitchRatio" value="1.25" step="0.05" min="1.05" max="3.0" onchange="validateShellDia(); runCalc();">
+      </div>
+    </div>
+
+    <div class="sec-title">1. Inner Tube Geometry &amp; Material</div>
     <div>
       <label for="inMat">Pipe Solid Material:</label>
       <select id="inMat"></select>
@@ -263,17 +487,17 @@
       </div>
     </div>
 
-    <div class="sec-title">2. Internal Fluid &amp; Pump</div>
+    <div class="sec-title">2. Inner Tube Fluid &amp; Pump</div>
     <div>
-      <label for="inFluid">Working Fluid (CoolProp):</label>
+      <label for="inFluid">Inner Working Fluid (CoolProp):</label>
       <select id="inFluid" onchange="onFluidChange()"></select>
     </div>
     <div class="grid-2" style="margin-top:8px;">
       <div>
-        <label for="inFlow">Volumetric Flow:</label>
+        <label for="inFlow">Total Volumetric Flow:</label>
         <div class="row-inline">
           <input type="number" id="inFlow" value="10.0" step="0.5" min="0.01" onchange="runCalc()">
-          <select id="inFlowUnit" style="width:85px;" onchange="runCalc()">
+          <select id="inFlowUnit" style="width:80px;" onchange="runCalc()">
             <option value="lpm" selected>L/min</option>
             <option value="gpm">GPM</option>
             <option value="cfm">CFM</option>
@@ -293,104 +517,137 @@
       <b>Active Pump:</b> Initializing...
     </div>
 
-    <div class="sec-title">3. External Cross-Flow Air &amp; Radial Fins</div>
-    <div class="grid-2">
-      <div>
-        <label for="inV" id="lblV">Duct Air Velocity (m/s):</label>
-        <input type="number" id="inV" value="8.0" step="0.5" min="0" onchange="runCalc()">
-      </div>
-      <div>
-        <label for="inTinf" id="lblTinf">Ambient Air, T_&infin; (&deg;C):</label>
-        <input type="number" id="inTinf" value="20.0" step="1.0" onchange="runCalc()">
-      </div>
-      <div style="grid-column: 1 / -1;">
-        <label for="inEtaFan">Blower / Fan Efficiency, &eta;_fan (%):</label>
-        <input type="number" id="inEtaFan" value="65" step="1" min="10" max="100" onchange="runCalc()">
-      </div>
+    <!-- SECTION 3A: FINNED PIPE AIR SIDE -->
+    <div id="airSideSection">
+      <div class="sec-title">3. External Cross-Flow Air &amp; Radial Fins</div>
+      <div class="grid-2">
+        <div>
+          <label for="inV" id="lblV">Duct Air Velocity (m/s):</label>
+          <input type="number" id="inV" value="8.0" step="0.5" min="0" onchange="runCalc()">
+        </div>
+        <div>
+          <label for="inTinf" id="lblTinf">Ambient Air, T_&infin; (&deg;C):</label>
+          <input type="number" id="inTinf" value="20.0" step="1.0" onchange="runCalc()">
+        </div>
+        <div style="grid-column: 1 / -1;">
+          <label for="inEtaFan">Blower / Fan Efficiency, &eta;_fan (%):</label>
+          <input type="number" id="inEtaFan" value="65" step="1" min="10" max="100" onchange="runCalc()">
+        </div>
 
-      <div style="grid-column: 1 / -1; margin-top: 4px; padding-top: 6px; border-top: 1px dashed #cbd5e1;">
-        <label style="display:flex; align-items:center; gap:6px; font-weight:bold; color:#0f172a; cursor:pointer;">
-          <input type="checkbox" id="inUseFins" checked onchange="toggleFinInputs()">
-          Enable Shrouded Radial Annular Fins
-        </label>
-      </div>
+        <div style="grid-column: 1 / -1; margin-top: 2px; padding-top: 6px; border-top: 1px dashed var(--border-strong);">
+          <label style="display:flex; align-items:center; gap:6px; font-weight:600; color:var(--text); cursor:pointer;">
+            <input type="checkbox" id="inUseFins" checked onchange="toggleFinInputs()">
+            Enable Shrouded Radial Annular Fins
+          </label>
+        </div>
 
-      <div id="finControls" style="grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-        <div>
-          <label for="inFinDia" id="lblFinDia">Fin Outer Dia, D_fin (mm):</label>
-          <input type="number" id="inFinDia" value="55.0" step="1.0" min="0.1" onchange="validateFinDia(); runCalc();">
-        </div>
-        <div>
-          <label for="inFinThick" id="lblFinThick">Fin Thickness, t_fin (mm):</label>
-          <input type="number" id="inFinThick" value="0.5" step="0.1" min="0.002" onchange="runCalc()">
-        </div>
-        <div>
-          <label for="inFinPitch" id="lblFinPitch">On-Center Spacing (mm):</label>
-          <input type="number" id="inFinPitch" value="3.0" step="0.5" min="0.01" onchange="runCalc()">
-        </div>
-        <div>
-          <label for="inDuctMargin">Duct Clearance (10-20%):</label>
-          <input type="number" id="inDuctMargin" value="15" step="1" min="10" max="20" onchange="runCalc()">
+        <div id="finControls" style="grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <div>
+            <label for="inFinDia" id="lblFinDia">Fin Outer Dia, D_fin (mm):</label>
+            <input type="number" id="inFinDia" value="55.0" step="1.0" min="0.1" onchange="validateFinDia(); runCalc();">
+          </div>
+          <div>
+            <label for="inFinThick" id="lblFinThick">Fin Thickness, t_fin (mm):</label>
+            <input type="number" id="inFinThick" value="0.5" step="0.1" min="0.002" onchange="runCalc()">
+          </div>
+          <div>
+            <label for="inFinPitch" id="lblFinPitch">On-Center Spacing (mm):</label>
+            <input type="number" id="inFinPitch" value="3.0" step="0.5" min="0.01" onchange="runCalc()">
+          </div>
+          <div>
+            <label for="inDuctMargin">Duct Clearance (10-20%):</label>
+            <input type="number" id="inDuctMargin" value="15" step="1" min="10" max="20" onchange="runCalc()">
+          </div>
         </div>
       </div>
     </div>
 
-    <button type="button" class="btn-save" onclick="fetchFromBackend(true)">Log Snapshot to CSV</button>
-    <button type="button" class="btn-download" onclick="downloadHistoryCsv()">Download CSV</button>
-    <div id="saveMsg">Snapshot saved to calculation_history.csv</div>
-  </div>
+    <!-- SECTION 3B: CONCENTRIC OUTER SHELL -->
+    <div id="shellSideSection" style="display:none;">
+      <div class="sec-title">3. Outer Shell Fluid &amp; Pump</div>
+      <div>
+        <label for="inShellFluid">Outer Shell Fluid (CoolProp):</label>
+        <select id="inShellFluid" onchange="onShellFluidChange()"></select>
+      </div>
+      <div class="grid-2" style="margin-top:8px;">
+        <div>
+          <label for="inShellDi" id="lblShellDi">Outer Shell ID, D_s (mm):</label>
+          <input type="number" id="inShellDi" value="45.0" step="0.5" min="1.0" onchange="validateShellDia(); runCalc();">
+        </div>
+        <div>
+          <label for="inShellTin" id="lblShellTin">Shell Inlet T_s,in (&deg;C):</label>
+          <input type="number" id="inShellTin" value="20.0" step="1.0" onchange="runCalc()">
+        </div>
+        <div>
+          <label for="inShellFlow">Shell Flow Rate:</label>
+          <div class="row-inline">
+            <input type="number" id="inShellFlow" value="15.0" step="0.5" min="0.01" onchange="runCalc()">
+            <select id="inShellFlowUnit" style="width:80px;" onchange="runCalc()">
+              <option value="lpm" selected>L/min</option>
+              <option value="gpm">GPM</option>
+              <option value="cfm">CFM</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label for="inShellEta">Shell Pump Eff (%):</label>
+          <input type="number" id="inShellEta" value="72" step="1" min="10" max="100" onchange="runCalc()">
+        </div>
+      </div>
+    </div>
+  </aside>
 
-  <!-- RIGHT RESULTS & PLOTS PANEL -->
-  <div class="panel">
+  <!-- RIGHT RESULTS & PLOTS WORKSPACE -->
+  <main class="panel">
     <div class="kpi-grid">
-      <div class="kpi-card">
-        <div class="kpi-label">Fluid Outlet Temp (T_out)</div>
+      <div class="kpi-card top-accent-slate">
+        <div class="kpi-label">Inner Fluid Outlet (T_out)</div>
         <div class="kpi-val" id="outTout">-</div>
-        <div style="font-size:11px; color:#64748b;">&Delta;T: <span id="outDT">-</span></div>
+        <div class="kpi-sub">&Delta;T: <span id="outDT">-</span></div>
       </div>
-      <div class="kpi-card">
-        <div class="kpi-label">Gross Heat Rejection (Q)</div>
-        <div class="kpi-val" id="outQ" style="color:#0066cc;">-</div>
-        <div style="font-size:11px; color:#64748b;">UA: <span id="outUA">-</span></div>
+      <div class="kpi-card top-accent-blue">
+        <div class="kpi-label">Gross Heat Transfer (Q)</div>
+        <div class="kpi-val" id="outQ" style="color:var(--primary);">-</div>
+        <div class="kpi-sub">UA: <span id="outUA">-</span></div>
       </div>
-      <div class="kpi-card">
-        <div class="kpi-label">Net Heat Rejection (Q_net)</div>
-        <div class="kpi-val" id="outQnet" style="color:#16a34a;">-</div>
-        <div style="font-size:11px; color:#64748b;">Net Eff: <span id="outEff">-</span></div>
+      <div class="kpi-card top-accent-green">
+        <div class="kpi-label">Net Heat Transfer (Q_net)</div>
+        <div class="kpi-val" id="outQnet" style="color:var(--green);">-</div>
+        <div class="kpi-sub">Net Eff: <span id="outEff">-</span></div>
       </div>
-      <div class="kpi-card">
+      <div class="kpi-card top-accent-purple">
         <div class="kpi-label">Heat / Parasitic Power (Q / P_elec)</div>
-        <div class="kpi-val" id="outCOPsys" style="color:#9333ea;">-</div>
-        <div style="font-size:11px; color:#64748b;">Pump+Fan: <span id="outPtotSummary">-</span></div>
+        <div class="kpi-val" id="outCOPsys" style="color:var(--purple);">-</div>
+        <div class="kpi-sub">Total Elec: <span id="outPtotSummary">-</span></div>
       </div>
     </div>
 
     <div class="diag-grid">
       <!-- Internal Hydraulics -->
       <div class="kpi-card">
-        <div class="sec-title">Internal Hydraulics</div>
+        <div class="sec-title">Inner Tube Hydraulics</div>
         <table class="diag">
           <tr><td>Pump Architecture:</td><td id="outPumpType">-</td></tr>
           <tr><td>Kinematic Visc (&nu;):</td><td id="outVisc">-</td></tr>
           <tr><td>Actual Pump Eff:</td><td id="outEtaAct">-</td></tr>
-          <tr><td>Internal &Delta;P:</td><td id="outDP">-</td></tr>
+          <tr><td>Inner Tube &Delta;P:</td><td id="outDP">-</td></tr>
           <tr><td>Darcy Friction (f):</td><td id="outF">-</td></tr>
           <tr><td>Hydraulic Power:</td><td id="outPhyd">-</td></tr>
-          <tr><td>Pump Shaft/Elec:</td><td id="outPpump">-</td></tr>
+          <tr><td>Inner Pump Power:</td><td id="outPpump">-</td></tr>
         </table>
       </div>
 
-      <!-- External Air & Shroud -->
+      <!-- External Air or Outer Shell -->
       <div class="kpi-card">
-        <div class="sec-title">External Air &amp; Shroud</div>
+        <div class="sec-title" id="secTitleSecondary">External Air &amp; Shroud</div>
         <table class="diag">
-          <tr><td>Fins &amp; Duct Shroud:</td><td id="outFinSummary">-</td></tr>
-          <tr><td>Air Pressure Drop:</td><td id="outDPair">-</td></tr>
-          <tr><td>Bundle Loss Coeff:</td><td id="outCD">-</td></tr>
-          <tr><td>Fan Elec Power:</td><td id="outPfan">-</td></tr>
-          <tr><td>Air Reynolds (Re_o):</td><td id="outReO">-</td></tr>
-          <tr><td>Air Nusselt (Nu_o):</td><td id="outNuO">-</td></tr>
-          <tr><td>Air Convection (h_o):</td><td id="outHo">-</td></tr>
+          <tr><td id="lblSecRow1">Fins &amp; Duct Shroud:</td><td id="outFinSummary">-</td></tr>
+          <tr><td id="lblSecRow2">Air Pressure Drop:</td><td id="outDPair">-</td></tr>
+          <tr><td id="lblSecRow3">Loss / Friction Coeff:</td><td id="outCD">-</td></tr>
+          <tr><td id="lblSecRow4">Fan / Shell Pump Power:</td><td id="outPfan">-</td></tr>
+          <tr><td>Outer Reynolds (Re_o):</td><td id="outReO">-</td></tr>
+          <tr><td>Outer Nusselt (Nu_o):</td><td id="outNuO">-</td></tr>
+          <tr><td>Outer Convection (h_o):</td><td id="outHo">-</td></tr>
         </table>
       </div>
 
@@ -398,26 +655,62 @@
       <div class="kpi-card">
         <div class="sec-title">Thermal Network</div>
         <table class="diag">
-          <tr><td>Pipe Outer Dia (D_o):</td><td id="outDo">-</td></tr>
+          <tr><td>Tube Outer Dia (D_o):</td><td id="outDo">-</td></tr>
           <tr><td>Internal Re_Di:</td><td id="outReI">-</td></tr>
           <tr><td>Flow Regime:</td><td id="outRegI">-</td></tr>
           <tr><td>Internal Nu_Di / h_i:</td><td><span id="outNuI">-</span> / <span id="outHi">-</span></td></tr>
           <tr><td id="lblRi">Inner Film R_i:</td><td id="outRi">-</td></tr>
           <tr><td id="lblRw">Pipe Wall R_w:</td><td id="outRw">-</td></tr>
-          <tr><td id="lblRo">Finned Air R_o:</td><td id="outRo">-</td></tr>
+          <tr><td id="lblRo">Outer Film R_o:</td><td id="outRo">-</td></tr>
         </table>
       </div>
     </div>
 
-    <div class="sweep-bar">
-      <label for="xMode" style="margin:0; font-weight:bold; color:#0f172a;">Parametric Sweep X-Axis:</label>
-      <select id="xMode" style="width:270px;" onchange="runCalc()">
-        <option value="Re_i" selected>Internal Reynolds Number (Re_Di)</option>
-        <option value="Flow">Internal Volumetric Flow Rate</option>
-        <option value="Wall" id="optSweepWall">Pipe Wall Thickness t (mm)</option>
-        <option value="V_air" id="optSweepVair">External Air Approach Velocity (m/s)</option>
-        <option value="Re_o">External Air Reynolds Number (Re_Do)</option>
-      </select>
+    <!-- TO-SCALE CROSS-SECTION + PARAMETRIC SWEEP BAR -->
+    <div class="schematic-sweep-row">
+      <div class="schematic-box">
+        <div class="schematic-header">
+          <span class="schematic-title">True-to-Scale Cross Section</span>
+          <span class="schematic-scale" id="schematicScaleLbl">1 : 1</span>
+        </div>
+        <svg id="hxSchematicSvg" viewBox="0 0 380 210" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div class="schematic-legend" id="schematicLegend">
+          <span><span class="legend-dot" style="background:#3b82f6;"></span>Inner Fluid</span>
+          <span><span class="legend-dot" style="background:#d97706;"></span>Tube Wall</span>
+          <span><span class="legend-dot" style="background:#e0f2fe; border:1px solid #0284c7;"></span>Outer Stream</span>
+        </div>
+      </div>
+
+      <div class="sweep-card">
+        <div>
+          <div class="sec-title" style="margin-top:0;">Parametric Sweep &amp; Bundle Geometry</div>
+          <div class="sweep-controls">
+            <label for="xMode" style="margin:0; font-weight:600; color:var(--text);">Plot X-Axis:</label>
+            <select id="xMode" style="width:280px;" onchange="runCalc()">
+              <option value="Re_i" selected>Internal Reynolds Number (Re_Di)</option>
+              <option value="Flow">Total Volumetric Flow Rate</option>
+              <option value="Wall" id="optSweepWall">Pipe Wall Thickness t (mm)</option>
+              <option value="V_air" id="optSweepVair">External Air Approach Velocity (m/s)</option>
+              <option value="Re_o">External Reynolds Number (Re_o)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="geom-summary-grid">
+          <div class="geom-stat">
+            <div class="geom-stat-lbl" id="lblGeomStat1">Outer Boundary</div>
+            <div class="geom-stat-val" id="valGeomStat1">-</div>
+          </div>
+          <div class="geom-stat">
+            <div class="geom-stat-lbl" id="lblGeomStat2">Tube Dimensions</div>
+            <div class="geom-stat-val" id="valGeomStat2">-</div>
+          </div>
+          <div class="geom-stat">
+            <div class="geom-stat-lbl" id="lblGeomStat3">Free-Flow Space</div>
+            <div class="geom-stat-val" id="valGeomStat3">-</div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="charts-grid">
@@ -425,30 +718,30 @@
         <div class="chart-title">
           <span id="titleG1">Gross Q (Blue) vs. Net Q (Green Dashed)</span>
         </div>
-        <canvas id="cG1" width="520" height="230"></canvas>
+        <canvas id="cG1" width="560" height="230"></canvas>
       </div>
       <div class="chart-box">
         <div class="chart-title">
           <span id="titleG4">Net Efficiency % (Green) &amp; Pump/Total Power</span>
         </div>
-        <canvas id="cG4" width="520" height="230"></canvas>
+        <canvas id="cG4" width="560" height="230"></canvas>
       </div>
       <div class="chart-box">
         <div class="chart-title">
-          <span id="titleG2">Fluid Outlet Temperature T_out</span>
+          <span id="titleG2">Inner Fluid Outlet Temperature T_out</span>
         </div>
-        <canvas id="cG2" width="520" height="230"></canvas>
+        <canvas id="cG2" width="560" height="230"></canvas>
       </div>
       <div class="chart-box">
         <div class="chart-title">
-          <span id="titleG3">Internal Pipe Nusselt Number (Nu_Di)</span>
+          <span id="titleG3">Internal Tube Nusselt Number (Nu_Di)</span>
         </div>
-        <canvas id="cG3" width="520" height="230"></canvas>
+        <canvas id="cG3" width="560" height="230"></canvas>
       </div>
     </div>
-  </div>
+  </main>
 </div>
 
-<script src="app.js?v=9"></script>
+<script src="app.js?v=14"></script>
 </body>
 </html>
