@@ -25,6 +25,8 @@ def solve_double_pipe(
     flow_direction: str = "counter",
     n_tubes: int = 1,
     pitch_ratio: float = 1.25,
+    inner_pump_type: str | None = None,
+    shell_pump_type: str | None = None,
 ) -> dict:
     """
     Single Concentric Double-Pipe (n_tubes=1) or Unbaffled Multi-Tube Bundle (n_tubes>1)
@@ -37,7 +39,6 @@ def solve_double_pipe(
     if nt == 1:
         min_shell_Di = Do + 0.002
     else:
-        # Prevalidated TEMA Outer Tube Limit (30-deg triangular pitch) + shell clearance
         P_T = Do * pr
         d_bundle = Do + P_T * math.sqrt((nt - 1) * 1.15)
         clearance = shell_clearance(d_bundle)
@@ -48,12 +49,10 @@ def solve_double_pipe(
     k_pipe = get_pipe_k(mat)
     R_wall = math.log(Do / Di) / (2.0 * math.pi * k_pipe * L * nt)
 
-    # Inner tube cross-section & per-tube velocity
     A_i_single = math.pi * Di * Di / 4.0
     Q_m3s_tube = Q_m3s / nt
     V_i = Q_m3s_tube / A_i_single
 
-    # Outer shell free-flow area, wetted perimeter, and bundle hydraulic diameter
     A_shell_total = (math.pi / 4.0) * (D_shell_i * D_shell_i)
     A_tubes_total = nt * (math.pi / 4.0) * (Do * Do)
     A_o = max(1e-7, A_shell_total - A_tubes_total)
@@ -110,13 +109,13 @@ def solve_double_pipe(
         T_bulk_i = 0.5 * (Tin + Tout_i)
         T_bulk_o = 0.5 * (shell_Tin + Tout_o)
 
-    pump_info = get_pump_characteristics(fluid, fprops_i["nu"], eta_base)
+    pump_info = get_pump_characteristics(fluid, fprops_i["nu"], eta_base, inner_pump_type)
     f_darcy_i = friction_factor(Re=max(1.0, Re_i), eD=rel_rough_i) if Re_i > 1e-6 else 0.0
     dP_i = f_darcy_i * (L / Di) * (0.5 * fprops_i["rho"] * V_i * V_i)
     P_hyd_i = Q_m3s * dP_i
     P_pump_i = P_hyd_i / max(0.05, pump_info["eta_actual"])
 
-    shell_pump_info = get_pump_characteristics(shell_fluid, fprops_o["nu"], eta_shell_pump)
+    shell_pump_info = get_pump_characteristics(shell_fluid, fprops_o["nu"], eta_shell_pump, shell_pump_type)
     f_darcy_o = friction_factor(Re=max(1.0, Re_o), eD=rel_rough_o) if Re_o > 1e-6 else 0.0
     dP_o = f_darcy_o * (L / Dh_o) * (0.5 * fprops_o["rho"] * V_o * V_o)
     P_hyd_o = shell_Q_m3s * dP_o
