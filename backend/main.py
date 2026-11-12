@@ -2,7 +2,8 @@ import os
 import csv
 import math
 from datetime import datetime
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 import CoolProp.CoolProp as CP
 from .models import CalcRequest
@@ -200,5 +201,16 @@ def calculate(req: CalcRequest):
         "crit_flow": crit_flow,
         "saved_to": saved_path
     }
+
+@app.get("/api/download-csv")
+def download_history_csv():
+    """Streams calculation_history.csv as a downloadable browser attachment."""
+    if not os.path.isfile(HISTORY_CSV):
+        raise HTTPException(status_code=404, detail="No CSV history logged yet.")
+    return FileResponse(
+        path=HISTORY_CSV,
+        media_type="text/csv",
+        filename="calculation_history.csv"
+    )
 
 app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")

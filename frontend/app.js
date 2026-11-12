@@ -676,6 +676,27 @@ async function populateIncompressibleFluids() {
   }
 }
 
+async function downloadHistoryCsv() {
+  try {
+    const res = await fetch("/api/download-csv");
+    if (!res.ok) {
+      alert("No snapshots logged yet. Click 'Log Snapshot to CSV' first!");
+      return;
+    }
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "calculation_history.csv";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    console.error("CSV download failed:", err);
+  }
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
   await Promise.all([
     populatePipeMaterials(),

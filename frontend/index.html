@@ -127,6 +127,18 @@
       cursor: pointer;
     }
     .btn-save:hover { background: #115e59; }
+    .btn-download {
+      width: 100%;
+      margin-top: 6px;
+      padding: 8px;
+      background: #0066cc;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .btn-download:hover { background: #0052a3; }
     #saveMsg {
       display: none;
       margin-top: 6px;
@@ -323,7 +335,8 @@
       </div>
     </div>
 
-    <button class="btn-save" onclick="fetchFromBackend(true)">Log Snapshot to CSV</button>
+    <button type="button" class="btn-save" onclick="fetchFromBackend(true)">Log Snapshot to CSV</button>
+    <button type="button" class="btn-download" onclick="downloadHistoryCsv()">Download CSV</button>
     <div id="saveMsg">Snapshot saved to calculation_history.csv</div>
   </div>
 
@@ -436,6 +449,6 @@
   </div>
 </div>
 
-<script src="app.js?v=8"></script>
+<script src="app.js?v=9"></script>
 </body>
 </html>
