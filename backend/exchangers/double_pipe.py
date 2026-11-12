@@ -154,6 +154,8 @@ def solve_double_pipe(
         "P_hyd": P_hyd_i,
         "P_pump": P_pump_i,
         "pumpInfo": pump_info,
+        "shellPumpInfo": shell_pump_info,
+        "P_pump_o": P_pump_o,
         "CD": f_darcy_o,
         "dP_air": dP_o,
         "P_fan": P_pump_o,

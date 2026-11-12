@@ -485,6 +485,19 @@ function updateUIAndPlots(req, cur, sweep, critFlow) {
   badge.className = "pump-badge" + (isPD ? " pd" : "");
   badge.innerHTML = "<b>Active Inner Pump:</b> " + cur.pumpInfo.pumpType + "<br>" + cur.pumpInfo.desc;
 
+  const shellBadge = document.getElementById("shellPumpBadge");
+  if (shellBadge) {
+    if (isShellSide && cur.shellPumpInfo) {
+      const shellIsPD = cur.shellPumpInfo.pumpType.toLowerCase().includes("positive");
+      shellBadge.className = "pump-badge" + (shellIsPD ? " pd" : "");
+      shellBadge.style.display = "block";
+      shellBadge.innerHTML =
+        "<b>Active Shell Pump:</b> " + cur.shellPumpInfo.pumpType + "<br>" + cur.shellPumpInfo.desc;
+    } else {
+      shellBadge.style.display = "none";
+    }
+  }
+
   document.getElementById("outPumpType").textContent = isPD ? "Pos. Displacement" : "Centrifugal Impeller";
   document.getElementById("outVisc").textContent = cur.pumpInfo.nu_cSt.toFixed(2) + " cSt";
   document.getElementById("outEtaAct").textContent = (cur.pumpInfo.eta_actual * 100).toFixed(1) + "%";
