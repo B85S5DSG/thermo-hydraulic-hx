@@ -1,5 +1,8 @@
 from pydantic import BaseModel, Field
-from typing import Literal
+from typing import Literal, Optional
+
+
+PumpType = Optional[Literal["centrifugal", "positive_displacement"]]
 
 
 class CalcRequest(BaseModel):
@@ -35,6 +38,8 @@ class CalcRequest(BaseModel):
     shell_flow_unit: Literal["lpm", "gpm", "cfm"] = "lpm"
     shell_Tin: float = 20.0
     eta_shell_pct: float = Field(72.0, ge=5, le=100)
+    inner_pump_type: PumpType = None
+    shell_pump_type: PumpType = None
 
     x_mode: Literal["Re_i", "Flow", "Wall", "V_air", "Re_o"] = "Re_i"
     save_snapshot: bool = False
