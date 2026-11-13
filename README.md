@@ -52,29 +52,6 @@ Rather than relying on simplified polynomial curve fits, the backend physics eng
 
 ---
 
-## Project Structure
-
-```text
-thermo-hydraulic-hx/
-├── Dockerfile
-├── docker-compose.yml
-├── requirements.txt
-├── backend/
-│   ├── main.py                    # FastAPI routes, fluid/material catalogs, & sweep orchestrator
-│   ├── models.py                  # Pydantic request validation schemas
-│   ├── incompressible_fluids.py   # CoolProp HEOS & INCOMP property evaluation
-│   ├── solids.py                  # Solid pipe thermal conductivity & roughness database
-│   ├── hydraulics.py              # Pump selection, Darcy friction, & aerodynamic drag models
-│   └── exchangers/
-│       ├── finned_pipe.py         # Shrouded finned cross-flow liquid-to-air solver
-│       └── double_pipe.py         # Concentric double-pipe & multi-tube bundle solver
-└── frontend/
-    ├── index.html                 # Dashboard layout, SVG schematic viewport, & KPI cards
-    └── app.js                     # State management, unit conversion, SVG renderer, & Canvas plots
-```
-
----
-
 ## Installation & Deployment (Docker Compose)
 
 Add the following service to your `docker-compose.yml` (or deploy as a Stack in **Portainer**):
