@@ -479,7 +479,8 @@ function updateUIAndPlots(req, cur, sweep, critFlow) {
   const qNetEl = document.getElementById("outQnet");
   qNetEl.innerHTML = fmtHeat(cur.Q_net, isImp) + (cur.Q_net < 0 ? " <span style='color:#dc2626;font-size:12px;'>(NET HEATING)</span>" : "");
   document.getElementById("outEff").textContent = cur.eff_net.toFixed(2) + "%";
-  document.getElementById("outCOPsys").textContent = cur.cop_sys > 5000 ? ">5000" : cur.cop_sys.toFixed(1);
+  const parasiticPct = cur.Q > 1e-6 ? (cur.P_tot_elec / cur.Q) * 100.0 : 0.0;
+  document.getElementById("outCOPsys").textContent = parasiticPct < 0.1 ? parasiticPct.toFixed(3) + "%" : parasiticPct.toFixed(2) + "%";
   document.getElementById("outPtotSummary").textContent = cur.P_tot_elec.toFixed(1) + " W";
 
   const badge = document.getElementById("pumpBadge");
@@ -518,7 +519,7 @@ function updateUIAndPlots(req, cur, sweep, critFlow) {
       : (cur.dP_air >= 1000 ? (cur.dP_air / 1000).toFixed(2) + " kPa" : cur.dP_air.toFixed(1) + " Pa");
   } else {
     if (req.use_fins) {
-      const finDiaDisp = isImp ? (cur.eff_fin_dia_mm / MM_PER_IN).toFixed(2) + "in" : cur.eff_fin_dia_mm.toFixed(1) + "mm";
+      const finDiaDisp = isImp ? ((cur.eff_fin_dia_mm || req.fin_dia_mm) / MM_PER_IN).toFixed(2) + "in" : (cur.eff_fin_dia_mm || req.fin_dia_mm).toFixed(1) + "mm";
       document.getElementById("outFinSummary").innerHTML =
         cur.n_fins + " fins (D=" + finDiaDisp + ", &eta;=" + (cur.eta_fin * 100).toFixed(0) + "%)";
     } else {

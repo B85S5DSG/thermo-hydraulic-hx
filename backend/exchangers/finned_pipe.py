@@ -83,8 +83,8 @@ def solve_pipe(Di: float, wall: float, L: float, eps_m: float, mat: str, fluid: 
     dP_air = CD * (0.5 * aprops["rho"] * V_air * V_air)
     D_duct = (D_fin if use_fins else Do) * (1.0 + duct_margin_pct / 100.0)
     P_fan = (D_duct * L * V_air * dP_air) / max(0.05, eta_fan)
-    Q_net = Q - P_pump
-    eff_net = ((Q - P_pump) / Q) * 100.0 if abs(Q) > 1e-6 else 0.0
     P_tot_elec = P_pump + P_fan
+    Q_net = Q - P_tot_elec
+    eff_net = ((Q - P_tot_elec) / abs(Q)) * 100.0 if abs(Q) > 1e-6 else 0.0
     cop_sys = (abs(Q_net) / P_tot_elec) if P_tot_elec > 1e-9 else 9999.0
-    return {"Do": Do, "Re_i": Re_i, "Nu_i": Nu_i, "h_i": h_i, "Re_o": Re_o, "Nu_o": Nu_o, "h_o": h_o, "R_i": R_i, "R_wall": R_wall, "R_o": R_o, "UA": UA, "Tout": Tout, "Q": Q, "Q_net": Q_net, "f_darcy": f_darcy, "dP": dP, "P_hyd": P_hyd, "P_pump": P_pump, "pumpInfo": pump_info, "CD": CD, "dP_air": dP_air, "P_fan": P_fan, "P_tot_elec": P_tot_elec, "eff_net": eff_net, "cop_sys": cop_sys, "n_fins": n_fins, "eta_fin": eta_fin, "nu_i": fprops["nu"], "nu_o": aprops["nu"]}
+    return {"Do": Do, "Re_i": Re_i, "Nu_i": Nu_i, "h_i": h_i, "Re_o": Re_o, "Nu_o": Nu_o, "h_o": h_o, "R_i": R_i, "R_wall": R_wall, "R_o": R_o, "UA": UA, "Tout": Tout, "Q": Q, "Q_net": Q_net, "f_darcy": f_darcy, "dP": dP, "P_hyd": P_hyd, "P_pump": P_pump, "pumpInfo": pump_info, "CD": CD, "dP_air": dP_air, "P_fan": P_fan, "P_tot_elec": P_tot_elec, "eff_net": eff_net, "cop_sys": cop_sys, "n_fins": n_fins, "eta_fin": eta_fin, "eff_fin_dia_mm": (D_fin * 1000.0) if use_fins else (Do * 1000.0), "H_duct_mm": D_duct * 1000.0, "nu_i": fprops["nu"], "nu_o": aprops["nu"]}
