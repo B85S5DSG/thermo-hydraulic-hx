@@ -158,6 +158,22 @@ function onShellFluidChange() {
   runCalc();
 }
 
+function onPumpStyleChange(side) {
+  const isShell = (side === "shell");
+  const style = document.getElementById(isShell ? "inShellPumpType" : "inPumpType").value;
+  const etaEl = document.getElementById(isShell ? "inShellEta" : "inEta");
+  if (style === "positive_displacement") {
+    etaEl.value = "82";
+  } else if (style === "centrifugal") {
+    etaEl.value = "72";
+  } else {
+    const fluid = document.getElementById(isShell ? "inShellFluid" : "inFluid").value.toLowerCase();
+    const isOil = ["xom", "dow", "t66", "t72", "syl", "s800", "pbb", "pcl", "phe", "phr", "pmr"].some(k => fluid.includes(k));
+    etaEl.value = isOil ? "82" : "72";
+  }
+  runCalc();
+}
+
 function runCalc() {
   clearTimeout(calcTimeout);
   calcTimeout = setTimeout(() => fetchFromBackend(false), 60);
