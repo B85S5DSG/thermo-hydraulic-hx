@@ -1,12 +1,12 @@
 services:
-  thermo-hydraulic-hx:
+  thermo-hydraulic-hx-dev:
     build:
       context: .
       dockerfile: Dockerfile
-    image: thermo-hydraulic-hx:latest
-    container_name: thermo-hydraulic-hx
+    image: thermo-hydraulic-hx-dev:latest
+    container_name: thermo-hydraulic-hx-dev
     restart: unless-stopped
     ports:
       - "8000:8000"
     volumes:
-      - /opt/docker/thermo-hydraulic-hx/data:/app/data
+      - ./data:/app/data
