@@ -24,6 +24,74 @@
       --shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
     }
 
+        :root[data-theme="dark"] {
+      --bg: #0b1120;
+      --surface: #111827;
+      --surface-alt: #1e293b;
+      --border: #334155;
+      --border-strong: #475569;
+      --text: #f1f5f9;
+      --text-muted: #cbd5e1;
+      --text-subtle: #94a3b8;
+      --primary: #3b82f6;
+      --primary-hover: #60a5fa;
+      --shadow: 0 1px 3px rgba(0, 0, 0, 0.35), 0 1px 2px rgba(0, 0, 0, 0.25);
+    }
+    :root[data-theme="dark"] input,
+    :root[data-theme="dark"] select {
+      background: var(--surface-alt);
+      color: var(--text);
+      border-color: var(--border-strong);
+    }
+    :root[data-theme="dark"] .brand-badge {
+      background: rgba(59, 130, 246, 0.18);
+      border-color: rgba(59, 130, 246, 0.4);
+    }
+    :root[data-theme="dark"] #appVersionBadge {
+      background: #1e293b !important;
+      color: #cbd5e1 !important;
+    }
+    :root[data-theme="dark"] #saveMsg {
+      background: rgba(22, 163, 74, 0.2);
+      color: #86efac;
+      border-color: rgba(22, 163, 74, 0.4);
+    }
+    :root[data-theme="dark"] .pump-status-box,
+    :root[data-theme="dark"] .info-banner {
+      background: rgba(59, 130, 246, 0.12);
+      border-color: rgba(59, 130, 246, 0.35);
+      color: #bfdbfe;
+    }
+    :root[data-theme="dark"] #hxSchematicSvg {
+      background: #0f172a !important;
+      border-color: var(--border) !important;
+    }
+    :root[data-theme="dark"] .schematic-legend span {
+      color: var(--text-muted);
+    }
+    :root[data-theme="dark"] .shell-pump-box {
+      background: rgba(124, 58, 237, 0.14);
+      border-color: rgba(124, 58, 237, 0.38);
+      color: #ddd6fe;
+    }
+
+    :root[data-theme="dark"] .pump-badge {
+      background: rgba(59, 130, 246, 0.14) !important;
+      border-color: rgba(59, 130, 246, 0.38) !important;
+      color: #bfdbfe !important;
+    }
+    :root[data-theme="dark"] .pump-badge strong {
+      color: #93c5fd !important;
+    }
+    :root[data-theme="dark"] .pd {
+      background: rgba(124, 58, 237, 0.16) !important;
+      border-color: rgba(124, 58, 237, 0.4) !important;
+      color: #ddd6fe !important;
+    }
+    :root[data-theme="dark"] .pd strong {
+      color: #c4b5fd !important;
+    }
+
     * { box-sizing: border-box; }
 
     body {
@@ -408,6 +476,14 @@
       .kpi-grid, .diag-grid, .charts-grid, .geom-summary-grid { grid-template-columns: 1fr; }
     }
   </style>
+<script>
+(function() {
+  const saved = localStorage.getItem("hxThemeMode") || "auto";
+  const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const resolved = (saved === "auto") ? (prefersDark ? "dark" : "light") : saved;
+  document.documentElement.setAttribute("data-theme", resolved);
+})();
+</script>
 </head>
 <body>
 
@@ -418,6 +494,11 @@
     <span id="appVersionBadge" style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:#e2e8f0;color:#334155;letter-spacing:0.3px;">__APP_VERSION__</span>
   </div>
   <div class="header-controls">
+    <div class="unit-toggle" role="group" aria-label="Color theme">
+      <button type="button" id="btnThemeAuto" class="active" onclick="setThemeMode('auto')">Auto</button>
+      <button type="button" id="btnThemeLight" onclick="setThemeMode('light')">Light</button>
+      <button type="button" id="btnThemeDark" onclick="setThemeMode('dark')">Dark</button>
+    </div>
     <span id="saveMsg">Saved to CSV</span>
     <button type="button" class="btn-header btn-save" onclick="fetchFromBackend(true)">Log Snapshot</button>
     <button type="button" class="btn-header btn-download" onclick="downloadHistoryCsv()">Download CSV</button>

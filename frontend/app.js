@@ -1,3 +1,40 @@
+function isDarkTheme() {
+  return document.documentElement.getAttribute("data-theme") === "dark";
+}
+
+function applyThemeMode(mode) {
+  const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const resolved = (mode === "auto") ? (prefersDark ? "dark" : "light") : mode;
+  document.documentElement.setAttribute("data-theme", resolved);
+  ["Auto", "Light", "Dark"].forEach(label => {
+    const btn = document.getElementById("btnTheme" + label);
+    if (btn) btn.classList.toggle("active", mode === label.toLowerCase());
+  });
+}
+
+function setThemeMode(mode) {
+  localStorage.setItem("hxThemeMode", mode);
+  applyThemeMode(mode);
+  if (typeof lastCalcData !== "undefined" && lastCalcData) {
+    renderAll(lastCalcData);
+  } else {
+    runCalc();
+  }
+}
+
+if (window.matchMedia) {
+  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
+    if ((localStorage.getItem("hxThemeMode") || "auto") === "auto") {
+      applyThemeMode("auto");
+      if (typeof lastCalcData !== "undefined" && lastCalcData) {
+        renderAll(lastCalcData);
+      } else {
+        runCalc();
+      }
+    }
+  });
+}
+
 let unitSystem = "metric"; // "metric" | "imperial"
 let pipeMaterialsMap = {};
 let calcTimeout = null;
@@ -329,7 +366,7 @@ function renderCrossSectionSchematic(req, cur) {
   // Subtle CAD grid background
   parts.push(`<defs>
     <pattern id="cadGrid" width="15" height="15" patternUnits="userSpaceOnUse">
-      <path d="M 15 0 L 0 0 0 15" fill="none" stroke="#f1f5f9" stroke-width="1"/>
+      <path d="M 15 0 L 0 0 0 15" fill="none" stroke="${isDarkTheme() ? "#1e293b" : "#f1f5f9"}" stroke-width="1"/>
     </pattern>
   </defs>`);
   parts.push(`<rect x="0" y="0" width="${W}" height="${H}" fill="url(#cadGrid)"/>`);
@@ -347,8 +384,8 @@ function renderCrossSectionSchematic(req, cur) {
     const rTubeIn = Math.max(1.2, (Di_mm / 2.0) * pxPerMm);
 
     // 1. Outer Shell Wall & Shell Fluid Annulus
-    parts.push(`<circle cx="${cx}" cy="${cy}" r="${rShellOut.toFixed(1)}" fill="#475569" stroke="#1e293b" stroke-width="1.2"/>`);
-    parts.push(`<circle cx="${cx}" cy="${cy}" r="${rShellIn.toFixed(1)}" fill="#e0f2fe" stroke="#0284c7" stroke-width="1"/>`);
+    parts.push(`<circle cx="${cx}" cy="${cy}" r="${rShellOut.toFixed(1)}" fill="${isDarkTheme() ? "#94a3b8" : "#475569"}" stroke="#1e293b" stroke-width="1.2"/>`);
+    parts.push(`<circle cx="${cx}" cy="${cy}" r="${rShellIn.toFixed(1)}" fill="${isDarkTheme() ? "#0c4a6e" : "#e0f2fe"}" stroke="#0284c7" stroke-width="1"/>`);
 
     // 2. Inner Tubes (1 for double_pipe, N for multi_tube)
     const pitch_mm = Do_mm * (req.pitch_ratio || 1.25);
@@ -384,20 +421,20 @@ function renderCrossSectionSchematic(req, cur) {
     // 4. Right-Side Dimension Callouts
     const dimX = 248;
     // Shell ID dimension
-    parts.push(`<line x1="${cx}" y1="${cy - rShellIn}" x2="${dimX + 12}" y2="${cy - rShellIn}" stroke="#0f172a" stroke-width="0.8" stroke-dasharray="2,2"/>`);
-    parts.push(`<line x1="${cx}" y1="${cy + rShellIn}" x2="${dimX + 12}" y2="${cy + rShellIn}" stroke="#0f172a" stroke-width="0.8" stroke-dasharray="2,2"/>`);
-    parts.push(`<line x1="${dimX}" y1="${cy - rShellIn}" x2="${dimX}" y2="${cy + rShellIn}" stroke="#0f172a" stroke-width="1.1"/>`);
-    parts.push(`<polygon points="${dimX},${cy - rShellIn} ${dimX - 3},${cy - rShellIn + 5} ${dimX + 3},${cy - rShellIn + 5}" fill="#0f172a"/>`);
-    parts.push(`<polygon points="${dimX},${cy + rShellIn} ${dimX - 3},${cy + rShellIn - 5} ${dimX + 3},${cy + rShellIn - 5}" fill="#0f172a"/>`);
+    parts.push(`<line x1="${cx}" y1="${cy - rShellIn}" x2="${dimX + 12}" y2="${cy - rShellIn}" stroke="${isDarkTheme() ? "#e2e8f0" : "#0f172a"}" stroke-width="0.8" stroke-dasharray="2,2"/>`);
+    parts.push(`<line x1="${cx}" y1="${cy + rShellIn}" x2="${dimX + 12}" y2="${cy + rShellIn}" stroke="${isDarkTheme() ? "#e2e8f0" : "#0f172a"}" stroke-width="0.8" stroke-dasharray="2,2"/>`);
+    parts.push(`<line x1="${dimX}" y1="${cy - rShellIn}" x2="${dimX}" y2="${cy + rShellIn}" stroke="${isDarkTheme() ? "#e2e8f0" : "#0f172a"}" stroke-width="1.1"/>`);
+    parts.push(`<polygon points="${dimX},${cy - rShellIn} ${dimX - 3},${cy - rShellIn + 5} ${dimX + 3},${cy - rShellIn + 5}" fill="${isDarkTheme() ? "#f1f5f9" : "#0f172a"}"/>`);
+    parts.push(`<polygon points="${dimX},${cy + rShellIn} ${dimX - 3},${cy + rShellIn - 5} ${dimX + 3},${cy + rShellIn - 5}" fill="${isDarkTheme() ? "#f1f5f9" : "#0f172a"}"/>`);
 
-    parts.push(`<text x="${dimX + 8}" y="${cy - 22}" font-size="10.5" font-weight="700" fill="#0f172a">Ds = ${fmtDim(Ds_mm, isImp)}</text>`);
-    parts.push(`<text x="${dimX + 8}" y="${cy - 6}" font-size="10" fill="#1d4ed8" font-weight="600">Di = ${fmtDim(Di_mm, isImp)}</text>`);
-    parts.push(`<text x="${dimX + 8}" y="${cy + 9}" font-size="10" fill="#92400e" font-weight="600">Do = ${fmtDim(Do_mm, isImp)}</text>`);
+    parts.push(`<text x="${dimX + 8}" y="${cy - 22}" font-size="10.5" font-weight="700" fill="${isDarkTheme() ? "#f1f5f9" : "#0f172a"}">Ds = ${fmtDim(Ds_mm, isImp)}</text>`);
+    parts.push(`<text x="${dimX + 8}" y="${cy - 6}" font-size="10" fill="${isDarkTheme() ? "#60a5fa" : "#1d4ed8"}" font-weight="600">Di = ${fmtDim(Di_mm, isImp)}</text>`);
+    parts.push(`<text x="${dimX + 8}" y="${cy + 9}" font-size="10" fill="${isDarkTheme() ? "#fbbf24" : "#92400e"}" font-weight="600">Do = ${fmtDim(Do_mm, isImp)}</text>`);
     if (nt > 1) {
-      parts.push(`<text x="${dimX + 8}" y="${cy + 25}" font-size="10" fill="#475569">N = ${nt} tubes</text>`);
-      parts.push(`<text x="${dimX + 8}" y="${cy + 39}" font-size="10" fill="#475569">PT = ${fmtDim(pitch_mm, isImp)}</text>`);
+      parts.push(`<text x="${dimX + 8}" y="${cy + 25}" font-size="10" fill="${isDarkTheme() ? "#94a3b8" : "#475569"}">N = ${nt} tubes</text>`);
+      parts.push(`<text x="${dimX + 8}" y="${cy + 39}" font-size="10" fill="${isDarkTheme() ? "#94a3b8" : "#475569"}">PT = ${fmtDim(pitch_mm, isImp)}</text>`);
     } else {
-      parts.push(`<text x="${dimX + 8}" y="${cy + 25}" font-size="10" fill="#475569">Gap = ${fmtDim((Ds_mm - Do_mm) / 2.0, isImp)}</text>`);
+      parts.push(`<text x="${dimX + 8}" y="${cy + 25}" font-size="10" fill="${isDarkTheme() ? "#94a3b8" : "#475569"}">Gap = ${fmtDim((Ds_mm - Do_mm) / 2.0, isImp)}</text>`);
     }
 
     document.getElementById("schematicScaleLbl").textContent = `1 px = ${(1 / pxPerMm).toFixed(2)} mm`;
@@ -427,7 +464,7 @@ function renderCrossSectionSchematic(req, cur) {
     const rTubeIn = Math.max(1.5, (Di_mm / 2.0) * pxPerMm);
 
     // 1. Shroud Duct Cross-Section (Square/Circular shroud envelope)
-    parts.push(`<rect x="${(cx - rShroud).toFixed(1)}" y="${(cy - rShroud).toFixed(1)}" width="${(rShroud * 2).toFixed(1)}" height="${(rShroud * 2).toFixed(1)}" rx="6" fill="#f0f9ff" stroke="#0284c7" stroke-width="1.5" stroke-dasharray="5,3"/>`);
+    parts.push(`<rect x="${(cx - rShroud).toFixed(1)}" y="${(cy - rShroud).toFixed(1)}" width="${(rShroud * 2).toFixed(1)}" height="${(rShroud * 2).toFixed(1)}" rx="6" fill="${isDarkTheme() ? "#082f49" : "#f0f9ff"}" stroke="#0284c7" stroke-width="1.5" stroke-dasharray="5,3"/>`);
 
     // 2. Radial Fin Disc (if enabled)
     if (req.use_fins) {
@@ -450,12 +487,12 @@ function renderCrossSectionSchematic(req, cur) {
     parts.push(`<polygon points="${dimX},${cy - rShroud} ${dimX - 3},${cy - rShroud + 5} ${dimX + 3},${cy - rShroud + 5}" fill="#0284c7"/>`);
     parts.push(`<polygon points="${dimX},${cy + rShroud} ${dimX - 3},${cy + rShroud - 5} ${dimX + 3},${cy + rShroud - 5}" fill="#0284c7"/>`);
 
-    parts.push(`<text x="${dimX + 8}" y="${cy - 22}" font-size="10.5" font-weight="700" fill="#0284c7">Duct = ${fmtDim(shroud_mm, isImp)}</text>`);
+    parts.push(`<text x="${dimX + 8}" y="${cy - 22}" font-size="10.5" font-weight="700" fill="${isDarkTheme() ? "#38bdf8" : "#0284c7"}">Duct = ${fmtDim(shroud_mm, isImp)}</text>`);
     if (req.use_fins) {
-      parts.push(`<text x="${dimX + 8}" y="${cy - 6}" font-size="10" fill="#b45309" font-weight="600">Dfin = ${fmtDim(finDia_mm, isImp)}</text>`);
+      parts.push(`<text x="${dimX + 8}" y="${cy - 6}" font-size="10" fill="${isDarkTheme() ? "#fcd34d" : "#b45309"}" font-weight="600">Dfin = ${fmtDim(finDia_mm, isImp)}</text>`);
     }
-    parts.push(`<text x="${dimX + 8}" y="${cy + 9}" font-size="10" fill="#92400e" font-weight="600">Do = ${fmtDim(Do_mm, isImp)}</text>`);
-    parts.push(`<text x="${dimX + 8}" y="${cy + 24}" font-size="10" fill="#1d4ed8" font-weight="600">Di = ${fmtDim(Di_mm, isImp)}</text>`);
+    parts.push(`<text x="${dimX + 8}" y="${cy + 9}" font-size="10" fill="${isDarkTheme() ? "#fbbf24" : "#92400e"}" font-weight="600">Do = ${fmtDim(Do_mm, isImp)}</text>`);
+    parts.push(`<text x="${dimX + 8}" y="${cy + 24}" font-size="10" fill="${isDarkTheme() ? "#60a5fa" : "#1d4ed8"}" font-weight="600">Di = ${fmtDim(Di_mm, isImp)}</text>`);
 
     document.getElementById("schematicScaleLbl").textContent = `1 px = ${(1 / pxPerMm).toFixed(2)} mm`;
     document.getElementById("schematicLegend").innerHTML = `
@@ -626,10 +663,10 @@ function updateUIAndPlots(req, cur, sweep, critFlow) {
   const maxX = xDisp[xDisp.length - 1];
   const xScale = getNiceScale(0, maxX, 6);
 
-  plotGraph("cG1", xDisp, qDisp, xScale, xTitle, isImp ? "Heat Rate (BTU/hr)" : "Heat Rate (W)", "#0066cc", curX, curQDisp, transLine, qNetDisp, "#16a34a", curQNetDisp);
-  plotDualAxisGraph("cG4", xDisp, sweep.eff, sweep.P_pump, sweep.P_tot, xScale, xTitle, "Net Eff (%)", "Power (W)", "#16a34a", "#9333ea", "#ca8a04", curX, cur.eff_net, cur.P_pump, cur.P_tot_elec, transLine);
-  plotGraph("cG2", xDisp, toutDisp, xScale, xTitle, isImp ? "Outlet Temp (\u00B0F)" : "Outlet Temp (\u00B0C)", "#d9534f", curX, curToutDisp, transLine);
-  plotGraph("cG3", xDisp, sweep.Nu, xScale, xTitle, "Nusselt (Nu)", "#e67e22", curX, curNu, transLine);
+  plotGraph("cG1", xDisp, qDisp, xScale, xTitle, isImp ? "Heat Rate (BTU/hr)" : "Heat Rate (W)", isDarkTheme() ? "#38bdf8" : "#0066cc", curX, curQDisp, transLine, qNetDisp, isDarkTheme() ? "#4ade80" : "#16a34a", curQNetDisp);
+  plotDualAxisGraph("cG4", xDisp, sweep.eff, sweep.P_pump, sweep.P_tot, xScale, xTitle, "Net Eff (%)", "Power (W)", isDarkTheme() ? "#4ade80" : "#16a34a", isDarkTheme() ? "#c084fc" : "#9333ea", isDarkTheme() ? "#facc15" : "#ca8a04", curX, cur.eff_net, cur.P_pump, cur.P_tot_elec, transLine);
+  plotGraph("cG2", xDisp, toutDisp, xScale, xTitle, isImp ? "Outlet Temp (\u00B0F)" : "Outlet Temp (\u00B0C)", isDarkTheme() ? "#f87171" : "#d9534f", curX, curToutDisp, transLine);
+  plotGraph("cG3", xDisp, sweep.Nu, xScale, xTitle, "Nusselt (Nu)", isDarkTheme() ? "#fb923c" : "#e67e22", curX, curNu, transLine);
 }
 
 function getNiceScale(minVal, maxVal, targetTicks) {
@@ -682,8 +719,8 @@ function plotGraph(canvasId, xArr, yArr, xScale, xTitle, yTitle, lineColor, curX
   if (minDataY > 0 && minDataY < maxDataY * 0.25) minDataY = 0;
   const yScale = getNiceScale(minDataY, maxDataY * 1.05, 5);
 
-  ctx.strokeStyle = "#e2e8f0";
-  ctx.fillStyle = "#475569";
+  ctx.strokeStyle = isDarkTheme() ? "#334155" : "#e2e8f0";
+  ctx.fillStyle = isDarkTheme() ? "#94a3b8" : "#475569";
   ctx.font = "11px Arial";
   ctx.lineWidth = 1;
 
@@ -703,7 +740,7 @@ function plotGraph(canvasId, xArr, yArr, xScale, xTitle, yTitle, lineColor, curX
     ctx.fillText(formatTick(xVal), xPos, pT + gH + 14);
   }
 
-  ctx.fillStyle = "#0f172a";
+  ctx.fillStyle = isDarkTheme() ? "#f1f5f9" : "#0f172a";
   ctx.font = "bold 11px Arial";
   ctx.textAlign = "center";
   ctx.fillText(xTitle, pL + gW / 2, H - 5);
@@ -750,7 +787,7 @@ function plotGraph(canvasId, xArr, yArr, xScale, xTitle, yTitle, lineColor, curX
     ctx.beginPath();
     ctx.arc(mx, my, 4.5, 0, 2 * Math.PI);
     ctx.fill();
-    ctx.strokeStyle = "#fff";
+    ctx.strokeStyle = isDarkTheme() ? "#111827" : "#fff";
     ctx.lineWidth = 1.5;
     ctx.stroke();
   };
@@ -774,7 +811,7 @@ function plotDualAxisGraph(canvasId, xArr, effArr, pPumpArr, pTotArr, xScale, xT
   const maxP = Math.max(1, ...pTotArr, ...pPumpArr);
   const y2Scale = getNiceScale(0, maxP * 1.1, 5);
 
-  ctx.strokeStyle = "#e2e8f0";
+  ctx.strokeStyle = isDarkTheme() ? "#334155" : "#e2e8f0";
   ctx.font = "11px Arial";
   ctx.lineWidth = 1;
 
@@ -799,12 +836,12 @@ function plotDualAxisGraph(canvasId, xArr, effArr, pPumpArr, pTotArr, xScale, xT
     const xVal = xScale.min + k * xScale.step;
     const xPos = pL + ((xVal - xScale.min) / (xScale.max - xScale.min || 1)) * gW;
     ctx.beginPath(); ctx.moveTo(xPos, pT); ctx.lineTo(xPos, pT + gH); ctx.stroke();
-    ctx.fillStyle = "#475569";
+    ctx.fillStyle = isDarkTheme() ? "#94a3b8" : "#475569";
     ctx.textAlign = "center";
     ctx.fillText(formatTick(xVal), xPos, pT + gH + 14);
   }
 
-  ctx.fillStyle = "#0f172a";
+  ctx.fillStyle = isDarkTheme() ? "#f1f5f9" : "#0f172a";
   ctx.font = "bold 11px Arial";
   ctx.textAlign = "center";
   ctx.fillText(xTitle, pL + gW / 2, H - 5);
@@ -888,6 +925,7 @@ async function populateIncompressibleFluids() {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
+  applyThemeMode(localStorage.getItem("hxThemeMode") || "auto");
   await Promise.all([
     populatePipeMaterials(),
     populateIncompressibleFluids()
