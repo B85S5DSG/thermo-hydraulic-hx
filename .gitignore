@@ -15,3 +15,4 @@ Thumbs.db
 *.swp
 *~
 Q:
+docker-compose.override.yml
