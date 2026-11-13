@@ -11,8 +11,8 @@ COPY backend/ ./backend/
 COPY frontend/ ./frontend/
 
 RUN CACHE_TAG=$([ "$APP_VERSION" = "dev" ] && date +%s || echo "$APP_VERSION") && \
-    sed -i "s|__APP_VERSION__|${APP_VERSION}|" /app/frontend/index.html && \
-    sed -i "s|app.js?v=${APP_VERSION}|app.js?v=${CACHE_TAG}|" /app/frontend/index.html && \
+    sed -i "s|__APP_VERSION__|${APP_VERSION}|g" /app/frontend/index.html && \
+    sed -i -E "s|app\.js\?v=[^\"]*|app.js?v=${CACHE_TAG}|g" /app/frontend/index.html && \
     mkdir -p /app/data
 
 EXPOSE 8000
