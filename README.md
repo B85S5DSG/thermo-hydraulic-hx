@@ -53,8 +53,20 @@ Rather than relying on simplified polynomial curve fits, the backend physics eng
 ---
 
 ## Installation & Deployment (Docker Compose)
+The application runs as a pre-built container from GitHub Container Registry (`ghcr.io/b85s5dsg/thermo-hydraulic-hx`) and persists logged calculation snapshots to `/app/data/calculation_history.csv`.
 
-Add the following service to your `docker-compose.yml` (or deploy as a Stack in **Portainer**):
+### 1. Create the Directory & Set Permissions
+Create the deployment folder and `data` subdirectory **before** starting the container. If you let Docker create the bind mount automatically, it will be owned by `root`, which can prevent the container or host user from writing CSV logs.
+
+```bash
+mkdir -p ./<your path>/thermo-hydraulic-hx/data
+sudo chown -R $USER:$USER ./<your path>/thermo-hydraulic-hx
+chmod -R 755 ./<your path>/thermo-hydraulic-hx/data
+cd ./<your path>/thermo-hydraulic-hx
+````
+
+### 2. Add the following service to your `docker-compose.yml` (or deploy as a Stack in **Portainer**):
+
 
 ```yaml
 services:
@@ -65,13 +77,13 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./thermo-hydraulic-hx/data:/app/data
+      - ./<your path>/data:/app/data
 ```
 
 > [!NOTE]
 > The mounted volume (`/app/data`) stores calculation snapshots written to `calculation_history.csv` when clicking **Log Snapshot** in the web interface.
 
-### Building Locally from Source
+## Building Locally from Source
 
 ```bash
 git clone https://github.com/B85S5DSG/thermo-hydraulic-hx.git
