@@ -90,7 +90,7 @@ function onHxTypeChange() {
   document.getElementById("lblSecRow3").textContent = isShellSide ? "Shell Friction (f_o):" : "Bundle Loss Coeff:";
   document.getElementById("lblSecRow4").textContent = isShellSide ? "Shell Pump Power:" : "Fan Elec Power:";
 
-  validateShellDia();
+  validateShellDia(true);
   runCalc();
 }
 
@@ -103,10 +103,10 @@ function validateFinDia() {
     const margin = (unitSystem === "imperial") ? 0.1 : 2.0;
     finEl.value = (doVal + margin).toFixed(unitSystem === "imperial" ? 3 : 1);
   }
-  validateShellDia();
+  validateShellDia(true);
 }
 
-function validateShellDia() {
+function validateShellDia(autoFit = false) {
   const hxType = document.getElementById("inHxType").value;
   const nt = (hxType === "multi_tube") ? Math.max(2, parseInt(document.getElementById("inNTubes").value) || 7) : 1;
   const pr = parseFloat(document.getElementById("inPitchRatio")?.value) || 1.25;
@@ -114,13 +114,19 @@ function validateShellDia() {
   const wall = parseFloat(document.getElementById("inWall").value) || 0;
   const doVal = di + 2.0 * wall;
 
+  // TEMA OTL Rule of Thumb with standard ~8mm clearance
+  const clearance = (unitSystem === "imperial") ? 0.35 : 8.0;
   const minShell = (nt === 1)
     ? doVal + ((unitSystem === "imperial") ? 0.25 : 6.0)
-    : doVal * pr * Math.sqrt(nt * 1.15) + ((unitSystem === "imperial") ? 0.35 : 8.0);
+    : doVal * pr * Math.sqrt(nt * 1.15) + clearance;
 
   const shellEl = document.getElementById("inShellDi");
-  if (shellEl && parseFloat(shellEl.value) < minShell) {
-    shellEl.value = minShell.toFixed(unitSystem === "imperial" ? 3 : 1);
+  if (shellEl) {
+    const curVal = parseFloat(shellEl.value);
+    // Auto-shrink if autoFit is triggered by bundle changes, or if current shell is physically too small
+    if (autoFit || curVal < minShell) {
+      shellEl.value = minShell.toFixed(unitSystem === "imperial" ? 3 : 1);
+    }
   }
 }
 
@@ -222,4 +228,118 @@ async function fetchFromBackend(saveSnapshot) {
   } catch (err) {
     console.error("Calculation error:", err);
   }
+}function renderSchematic(payload, cur, isImp) {
+  const svg = document.getElementById("hxSchematicSvg");
+  if (!svg) return;
+
+  const fmtDim = (mm) => isImp ? (mm / MM_PER_IN).toFixed(2) + " in" : mm.toFixed(1) + " mm";
+  const di_mm = payload.Di * 1000.0;
+  const do_mm = (cur.Do || (payload.Di + 2 * payload.wall)) * 1000.0;
+  const isShell = (payload.hx_type === "double_pipe" || payload.hx_type === "multi_tube");
+  const nt = (payload.hx_type === "multi_tube") ? Math.max(1, payload.n_tubes) : 1;
+
+  const outer_mm = isShell
+    ? (cur.D_shell_i ? cur.D_shell_i * 1000.0 : payload.shell_Di_mm)
+    : (payload.use_fins ? payload.fin_dia_mm : do_mm);
+  const shroud_mm = isShell ? outer_mm : outer_mm * (1.0 + (payload.duct_margin_pct || 15.0) / 100.0);
+
+  const cx = 145, cy = 105;
+  const maxR = 76;
+  const scale = maxR / Math.max(1.0, shroud_mm / 2.0);
+
+  const scaleLbl = document.getElementById("schematicScaleLbl");
+  if (scaleLbl) {
+    scaleLbl.textContent = scale.toFixed(2) + " px/mm (" + (isShell ? (nt > 1 ? nt + "-Tube Bundle" : "Double-Pipe") : "Shrouded Fin") + ")";
+  }
+
+  let html = "";
+  if (isShell) {
+    const rShell = (outer_mm / 2.0) * scale;
+    html += `<circle cx="${cx}" cy="${cy}" r="${rShell + 4}" fill="#64748b" />`;
+    html += `<circle cx="${cx}" cy="${cy}" r="${rShell}" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5" />`;
+
+    const rDo = Math.max(2.5, (do_mm / 2.0) * scale);
+    const rDi = Math.max(1.2, (di_mm / 2.0) * scale);
+
+    if (nt === 1) {
+      html += `<circle cx="${cx}" cy="${cy}" r="${rDo}" fill="#d97706" />`;
+      html += `<circle cx="${cx}" cy="${cy}" r="${rDi}" fill="#3b82f6" />`;
+    } else {
+      const pitch_mm = do_mm * (payload.pitch_ratio || 1.25);
+      const pitch_px = pitch_mm * scale;
+      const coords = [[0, 0]];
+      let ring = 1;
+      while (coords.length < nt && ring < 15) {
+        const countInRing = ring * 6;
+        const radiusPx = ring * pitch_px;
+        for (let k = 0; k < countInRing && coords.length < nt; k++) {
+          const ang = (2 * Math.PI * k) / countInRing;
+          const x = radiusPx * Math.cos(ang);
+          const y = radiusPx * Math.sin(ang);
+          if (Math.hypot(x, y) + rDo <= rShell - 1) coords.push([x, y]);
+        }
+        ring++;
+      }
+      coords.forEach(([dx, dy]) => {
+        html += `<circle cx="${cx + dx}" cy="${cy + dy}" r="${rDo}" fill="#d97706" />`;
+        html += `<circle cx="${cx + dx}" cy="${cy + dy}" r="${rDi}" fill="#3b82f6" />`;
+      });
+    }
+
+    // Callout lines & dimension text on right side of SVG
+    const lx = 240;
+    html += `<line x1="${cx}" y1="${cy - rShell}" x2="${lx - 4}" y2="38" stroke="#0284c7" stroke-width="1" stroke-dasharray="2,2" />`;
+    html += `<text x="${lx}" y="41" fill="#0f172a" font-size="11" font-weight="600">Shell ID (D_s): ${fmtDim(outer_mm)}</text>`;
+
+    html += `<line x1="${cx}" y1="${cy - rDo}" x2="${lx - 4}" y2="75" stroke="#d97706" stroke-width="1" stroke-dasharray="2,2" />`;
+    html += `<text x="${lx}" y="78" fill="#b45309" font-size="11" font-weight="600">Tube OD (D_o): ${fmtDim(do_mm)}</text>`;
+
+    html += `<line x1="${cx}" y1="${cy}" x2="${lx - 4}" y2="112" stroke="#2563eb" stroke-width="1" stroke-dasharray="2,2" />`;
+    html += `<text x="${lx}" y="115" fill="#1d4ed8" font-size="11" font-weight="600">Tube ID (D_i): ${fmtDim(di_mm)}</text>`;
+
+    html += `<text x="${lx}" y="148" fill="#475569" font-size="10.5">Tubes: ${nt} (${payload.flow_direction})</text>`;
+    if (cur.free_space_pct !== undefined) {
+      html += `<text x="${lx}" y="166" fill="#0d9488" font-size="10.5" font-weight="600">Shell Free Area: ${cur.free_space_pct.toFixed(1)}%</text>`;
+    }
+  } else {
+    const rShroud = (shroud_mm / 2.0) * scale;
+    const rFin = (outer_mm / 2.0) * scale;
+    const rDo = Math.max(3, (do_mm / 2.0) * scale);
+    const rDi = Math.max(1.5, (di_mm / 2.0) * scale);
+
+    html += `<rect x="${cx - rShroud}" y="${cy - rShroud}" width="${rShroud * 2}" height="${rShroud * 2}" rx="6" fill="#f1f5f9" stroke="#64748b" stroke-width="1.2" stroke-dasharray="4,3" />`;
+    if (payload.use_fins) {
+      html += `<circle cx="${cx}" cy="${cy}" r="${rFin}" fill="#fed7aa" stroke="#ea580c" stroke-width="1.2" />`;
+    }
+    html += `<circle cx="${cx}" cy="${cy}" r="${rDo}" fill="#d97706" />`;
+    html += `<circle cx="${cx}" cy="${cy}" r="${rDi}" fill="#3b82f6" />`;
+
+    const lx = 240;
+    html += `<line x1="${cx + rShroud}" y1="${cy - rShroud}" x2="${lx - 4}" y2="35" stroke="#64748b" stroke-width="1" stroke-dasharray="2,2" />`;
+    html += `<text x="${lx}" y="38" fill="#334155" font-size="11" font-weight="600">Duct Shroud: ${fmtDim(shroud_mm)}</text>`;
+
+    if (payload.use_fins) {
+      html += `<line x1="${cx}" y1="${cy - rFin}" x2="${lx - 4}" y2="70" stroke="#ea580c" stroke-width="1" stroke-dasharray="2,2" />`;
+      html += `<text x="${lx}" y="73" fill="#c2410c" font-size="11" font-weight="600">Fin OD (D_fin): ${fmtDim(outer_mm)}</text>`;
+    }
+
+    html += `<line x1="${cx}" y1="${cy - rDo}" x2="${lx - 4}" y2="105" stroke="#d97706" stroke-width="1" stroke-dasharray="2,2" />`;
+    html += `<text x="${lx}" y="108" fill="#b45309" font-size="11" font-weight="600">Pipe OD (D_o): ${fmtDim(do_mm)}</text>`;
+
+    html += `<line x1="${cx}" y1="${cy}" x2="${lx - 4}" y2="140" stroke="#2563eb" stroke-width="1" stroke-dasharray="2,2" />`;
+    html += `<text x="${lx}" y="143" fill="#1d4ed8" font-size="11" font-weight="600">Pipe ID (D_i): ${fmtDim(di_mm)}</text>`;
+
+    html += `<text x="${lx}" y="172" fill="#475569" font-size="10.5">Air V: ${isImp ? (payload.V_air / M_PER_FT).toFixed(1) + " ft/s" : payload.V_air.toFixed(1) + " m/s"}</text>`;
+  }
+
+  svg.innerHTML = html;
+
+  const st1 = document.getElementById("valGeomStat1");
+  const st2 = document.getElementById("valGeomStat2");
+  const st3 = document.getElementById("valGeomStat3");
+  if (st1) st1.textContent = isShell ? "D_s = " + fmtDim(outer_mm) : (payload.use_fins ? "D_fin = " + fmtDim(outer_mm) : "Shroud = " + fmtDim(shroud_mm));
+  if (st2) st2.textContent = (nt > 1 ? nt + "\u00D7 " : "") + "D_o = " + fmtDim(do_mm);
+  if (st3) st3.textContent = (cur.free_space_pct !== undefined) ? cur.free_space_pct.toFixed(1) + "% Free Area" : "D_i = " + fmtDim(di_mm);
 }
+
+

@@ -448,11 +448,11 @@
     <div id="nTubesBox" class="grid-2" style="display:none; margin-top:8px;">
       <div>
         <label for="inNTubes">Parallel Tubes (N_tubes):</label>
-        <input type="number" id="inNTubes" value="7" step="1" min="2" max="500" onchange="validateShellDia(); runCalc();">
+        <input type="number" id="inNTubes" value="19" step="1" min="2" max="500" onchange="validateShellDia(true); runCalc();">
       </div>
       <div>
         <label for="inPitchRatio">Pitch Ratio (P_T / D_o):</label>
-        <input type="number" id="inPitchRatio" value="1.25" step="0.05" min="1.05" max="3.0" onchange="validateShellDia(); runCalc();">
+        <input type="number" id="inPitchRatio" value="1.25" step="0.05" min="1.05" max="3.0" onchange="validateShellDia(true); runCalc();">
       </div>
     </div>
 
@@ -464,7 +464,7 @@
     <div class="grid-2" style="margin-top:8px;">
       <div>
         <label for="inDi" id="lblDi">Inner Dia, D_i (mm):</label>
-        <input type="number" id="inDi" value="25.0" step="0.5" min="0.1" onchange="validateFinDia(); runCalc();">
+        <input type="number" id="inDi" value="5.0" step="0.5" min="0.1" onchange="validateFinDia(); runCalc();">
       </div>
       <div>
         <label for="inWall" id="lblWall">Wall Thick, t (mm):</label>
@@ -507,7 +507,7 @@
       </div>
       <div style="grid-column: 1 / -1;">
         <label for="inPumpType">Pump Architecture Override:</label>
-        <select id="inPumpType" onchange="runCalc()">
+        <select id="inPumpType" onchange="onPumpStyleChange('inner')">
           <option value="auto" selected>Auto (based on fluid viscosity)</option>
           <option value="centrifugal">Centrifugal (Radial Impeller)</option>
           <option value="positive_displacement">Positive Displacement (Rotary Gear)</option>
@@ -594,7 +594,7 @@
         </div>
         <div style="grid-column: 1 / -1;">
           <label for="inShellPumpType">Shell Pump Architecture Override:</label>
-          <select id="inShellPumpType" onchange="runCalc()">
+          <select id="inShellPumpType" onchange="onPumpStyleChange('shell')">
             <option value="auto" selected>Auto (based on fluid viscosity)</option>
             <option value="centrifugal">Centrifugal (Radial Impeller)</option>
             <option value="positive_displacement">Positive Displacement (Rotary Gear)</option>
@@ -625,7 +625,7 @@
         <div class="kpi-sub">Net Eff: <span id="outEff">-</span></div>
       </div>
       <div class="kpi-card top-accent-purple">
-        <div class="kpi-label">Heat / Parasitic Power (Q / P_elec)</div>
+        <div class="kpi-label">Parasitic Loss (% of Q)</div>
         <div class="kpi-val" id="outCOPsys" style="color:var(--purple);">-</div>
         <div class="kpi-sub">Total Elec: <span id="outPtotSummary">-</span></div>
       </div>
@@ -747,6 +747,6 @@
   </main>
 </div>
 
-<script src="app.js?v=15"></script>
+<script src="app.js?v=108"></script>
 </body>
 </html>
