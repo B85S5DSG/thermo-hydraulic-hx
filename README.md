@@ -74,6 +74,9 @@ services:
     image: ghcr.io/b85s5dsg/thermo-hydraulic-hx:latest
     container_name: thermo-hydraulic-hx
     restart: unless-stopped
+    user: "1000:1000"
+    security_opt:
+      - no-new-privileges:true
     ports:
       - "8000:8000"
     volumes:
